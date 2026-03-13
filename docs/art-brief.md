@@ -50,7 +50,22 @@ The player catches up to these on the road. We only ever see their backs.
 
 ## 3. Roadside Objects
 
-Flat cutouts that appear on either side of the road. Seen from the front, as if you're looking straight at them — like cardboard standees.
+Flat cutouts that appear on either side of the road. Seen from the front, as if you're looking straight at them — like cardboard standees. These scale with perspective: small when far away, full size when close.
+
+### Buildings
+
+These line both sides of the road to create a Parisian street corridor feel. They should be placed densely — the player should feel like they're riding through a boulevard.
+
+| Filename | Description | Approx. size |
+|---|---|---|
+| `building_1.png` | Classic Haussmann facade, 4-5 stories | 120x200 |
+| `building_2.png` | Narrower Haussmann variant | 80x200 |
+| `building_3.png` | Building with shop front (boulangerie, pharmacie) | 120x200 |
+| `building_4.png` | Building with balconies and flower boxes | 100x200 |
+
+### Props and Landmarks
+
+Smaller objects placed between or in front of buildings for variety.
 
 | Filename | Description | Approx. size |
 |---|---|---|
@@ -67,6 +82,7 @@ Flat cutouts that appear on either side of the road. Seen from the front, as if 
 | `velib_station.png` | Bike sharing dock | 80x50 |
 | `trash_bin.png` | Parisian green bin | 25x40 |
 
+### Rules for all roadside objects
 - **What to draw:** the object, front-facing, flat, as if looking straight at it
 - **What's transparent:** everything around the object
 - Do NOT draw these at an angle — straight on, like a cardboard cutout
@@ -81,10 +97,11 @@ These scroll horizontally behind the road. They must **tile seamlessly**: if you
 |---|---|---|
 | `bg_sky.png` | Sky with clouds | 1600x200 |
 | `bg_far.png` | Distant Paris skyline (Sacre-Coeur, rooftops, chimneys) | 1600x160 |
-| `bg_near.png` | Closer buildings, balconies, windows | 1600x120 |
+
+We only need 2 layers. The "near buildings" effect is handled by roadside building sprites (section 3) which scale with road perspective and look much better than a flat scrolling layer.
 
 - `bg_sky.png` is **fully opaque** (no transparency)
-- `bg_far.png` and `bg_near.png` are **transparent at the top** so the layer behind shows through, and solid toward the bottom
+- `bg_far.png` is **transparent at the top** so the sky shows through, and solid toward the bottom
 - **Tiling test:** duplicate the image, place the copy flush to the right — the skyline, rooftops, and clouds should flow continuously with no seam
 
 ---

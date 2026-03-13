@@ -9,6 +9,10 @@ A comical pseudo-3D arcade road racer set in Paris. You ride a tiny bike through
 - **Pseudo-3D technique reference:** [extentofthejam.com/pseudo/](http://www.extentofthejam.com/pseudo/)
 - **Art brief for the artist:** `docs/art-brief.md`
 
+## Workflow
+
+- Push straight to `main` — no branches, no PRs
+
 ## Game Plan
 
 ### Tech
