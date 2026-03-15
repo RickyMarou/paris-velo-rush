@@ -1,7 +1,7 @@
 window.PVR = window.PVR || {};
 
-PVR.WIDTH = 800;
-PVR.HEIGHT = 500;
+PVR.WIDTH = 3200;
+PVR.HEIGHT = 2000;
 PVR.FPS = 60;
 PVR.STEP = 1 / PVR.FPS;
 

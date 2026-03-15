@@ -23,17 +23,17 @@ canvas#game {
   max-height: 100vh;
   width: auto;
   height: auto;
-  aspect-ratio: 800 / 500;
+  aspect-ratio: 3200 / 2000;
 }
 
-@media (max-aspect-ratio: 800/500) {
+@media (max-aspect-ratio: 8/5) {
   canvas#game {
     width: 100vw;
     height: auto;
   }
 }
 
-@media (min-aspect-ratio: 800/500) {
+@media (min-aspect-ratio: 8/5) {
   canvas#game {
     width: auto;
     height: 100vh;

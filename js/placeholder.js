@@ -325,22 +325,22 @@ PVR.Placeholder = {
     PVR.Assets.bg_far = far;
 
     // near buildings
-    var near = PVR.Placeholder.createCanvas(1600, 150);
+    var near = PVR.Placeholder.createCanvas(3200, 600);
     var nearCtx = near.getContext('2d');
     xp = 0;
-    while (xp < 1600) {
-      var nw = 30 + Math.random() * 60;
-      var nh = 60 + Math.random() * 80;
+    while (xp < 3200) {
+      var nw = 60 + Math.random() * 120;
+      var nh = 240 + Math.random() * 320;
       var hue = Math.random() < 0.5 ? '#BCAAA4' : '#D7CCC8';
       nearCtx.fillStyle = hue;
-      nearCtx.fillRect(xp, 150 - nh, nw, nh);
+      nearCtx.fillRect(xp, 600 - nh, nw, nh);
       nearCtx.fillStyle = '#90CAF9';
-      for (var wy = 150 - nh + 8; wy < 140; wy += 16) {
-        for (var wx = xp + 5; wx < xp + nw - 8; wx += 12) {
-          nearCtx.fillRect(wx, wy, 6, 8);
+      for (var wy = 600 - nh + 16; wy < 560; wy += 32) {
+        for (var wx = xp + 10; wx < xp + nw - 16; wx += 24) {
+          nearCtx.fillRect(wx, wy, 12, 16);
         }
       }
-      xp += nw + 3;
+      xp += nw + 6;
     }
     PVR.Assets.bg_near = near;
   }

@@ -15,9 +15,9 @@ PVR.Render = {
   background: function(skyOffset, farOffset, nearOffset) {
     var ctx = PVR.Render.ctx;
 
-    PVR.Render.drawParallaxLayer(PVR.Assets.bg_sky, skyOffset, 0, PVR.WIDTH, 250);
-    PVR.Render.drawParallaxLayer(PVR.Assets.bg_far, farOffset, 180, PVR.WIDTH, 120);
-    PVR.Render.drawParallaxLayer(PVR.Assets.bg_near, nearOffset, 220, PVR.WIDTH, 150);
+    PVR.Render.drawParallaxLayer(PVR.Assets.bg_sky, skyOffset, 0, PVR.WIDTH, 900);
+    PVR.Render.drawParallaxLayer(PVR.Assets.bg_far, farOffset, 600, PVR.WIDTH, 500);
+    PVR.Render.drawParallaxLayer(PVR.Assets.bg_near, nearOffset, 800, PVR.WIDTH, 400);
   },
 
   drawParallaxLayer: function(img, offset, y, w, h) {
@@ -89,7 +89,7 @@ PVR.Render = {
 
     var spriteW = img.width;
     var spriteH = img.height;
-    var spriteScale = scale * roadW / 250;
+    var spriteScale = scale * PVR.ROAD.WIDTH * 1.5;
     var destW = spriteW * spriteScale;
     var destH = spriteH * spriteScale;
     var destX = roadX + (roadW * offset) - destW / 2;
@@ -113,8 +113,8 @@ PVR.Render = {
     if (!img) return;
 
     var speedPercent = speed / maxSpeed;
-    var bounce = (1.5 * Math.random() * speedPercent * PVR.HEIGHT / 500) * (Math.random() > 0.5 ? 1 : -1);
-    var spriteScale = 3;
+    var bounce = (1.5 * Math.random() * speedPercent * PVR.HEIGHT / 2000) * (Math.random() > 0.5 ? 1 : -1);
+    var spriteScale = 1.5;
     var destW = img.width * spriteScale;
     var destH = img.height * spriteScale;
     var destX = PVR.WIDTH / 2 - destW / 2;

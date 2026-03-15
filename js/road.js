@@ -101,24 +101,28 @@ PVR.Road = {
 
   addRoadsideSprites: function() {
     var segs = PVR.Road.segments;
+    var trees = ['tree_1', 'tree_2'];
+    var buildings = ['building_1', 'building_2', 'building_3', 'building_4'];
+    var props = ['cafe', 'baguette_stand', 'newspaper_kiosk', 'velib_station'];
+    var small = ['lamppost', 'trash_bin', 'bollard', 'pigeon'];
+
     for (var n = 10; n < segs.length; n += 5) {
-      var side = (n % 2 === 0) ? 1.2 : -1.2;
+      var side = (n % 2 === 0) ? 0.7 : -0.7;
       var spriteKey;
       var r = Math.random();
 
-      if (r < 0.3) spriteKey = 'tree';
-      else if (r < 0.5) spriteKey = 'lamppost';
-      else if (r < 0.65) spriteKey = 'building_small';
-      else if (r < 0.75) spriteKey = 'building_tall';
-      else if (r < 0.85) spriteKey = 'cafe';
-      else spriteKey = 'tree';
+      if (r < 0.25) spriteKey = PVR.Util.randomChoice(trees);
+      else if (r < 0.40) spriteKey = PVR.Util.randomChoice(small);
+      else if (r < 0.60) spriteKey = PVR.Util.randomChoice(buildings);
+      else if (r < 0.80) spriteKey = PVR.Util.randomChoice(props);
+      else spriteKey = PVR.Util.randomChoice(trees);
 
-      PVR.Road.addSprite(n, spriteKey, side + (Math.random() - 0.5) * 0.4);
+      PVR.Road.addSprite(n, spriteKey, side + (Math.random() - 0.5) * 0.2);
     }
 
     for (n = 20; n < segs.length; n += 80) {
-      var landmarkSide = (n % 4 === 0) ? 2.5 : -2.5;
-      var landmarks = ['eiffel_tower', 'arc_triomphe', 'notre_dame'];
+      var landmarkSide = (n % 4 === 0) ? 1.2 : -1.2;
+      var landmarks = ['eiffel_tower', 'arc_triomphe'];
       PVR.Road.addSprite(n, PVR.Util.randomChoice(landmarks), landmarkSide);
     }
   }

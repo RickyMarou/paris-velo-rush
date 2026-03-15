@@ -47,7 +47,7 @@ PVR.Game = {
       var car = {
         offset: -0.8 + Math.random() * 1.6,
         z: segIdx * PVR.ROAD.SEGMENT_LENGTH + Math.random() * PVR.ROAD.SEGMENT_LENGTH,
-        sprite: 'rival_' + PVR.Util.randomInt(0, 5),
+        sprite: PVR.Util.randomChoice(['rival_bike', 'rival_scooter', 'rival_pedestrian', 'rival_truck']),
         speed: PVR.SPEED.MAX / 4 + Math.random() * PVR.SPEED.MAX / 2,
         passed: false
       };
@@ -125,40 +125,31 @@ PVR.Game = {
     ctx.fillRect(0, 0, PVR.WIDTH, PVR.HEIGHT);
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 60px monospace';
+    ctx.font = 'bold 240px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('PARIS VELO', PVR.WIDTH / 2, 160);
+    ctx.fillText('PARIS VELO', PVR.WIDTH / 2, 640);
 
     ctx.fillStyle = '#FFD700';
-    ctx.font = 'bold 28px monospace';
-    ctx.fillText('RUSH', PVR.WIDTH / 2, 200);
+    ctx.font = 'bold 112px monospace';
+    ctx.fillText('RUSH', PVR.WIDTH / 2, 800);
 
-    // bike silhouette
-    ctx.fillStyle = '#E63946';
-    ctx.beginPath();
-    ctx.arc(PVR.WIDTH / 2 - 20, 270, 15, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(PVR.WIDTH / 2 + 20, 270, 15, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#E63946';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(PVR.WIDTH / 2 - 20, 270);
-    ctx.lineTo(PVR.WIDTH / 2 + 5, 245);
-    ctx.lineTo(PVR.WIDTH / 2 + 20, 270);
-    ctx.stroke();
+    var playerImg = PVR.Assets['player_straight'];
+    if (playerImg) {
+      var pw = playerImg.width * 1.2;
+      var ph = playerImg.height * 1.2;
+      ctx.drawImage(playerImg, PVR.WIDTH / 2 - pw / 2, 860, pw, ph);
+    }
 
     if (Math.sin(PVR.Game.titleBlink * 3) > 0) {
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = '20px monospace';
-      ctx.fillText('PRESS ENTER TO START', PVR.WIDTH / 2, 360);
+      ctx.font = '80px monospace';
+      ctx.fillText('PRESS ENTER TO START', PVR.WIDTH / 2, 1440);
     }
 
     ctx.fillStyle = '#90CAF9';
-    ctx.font = '14px monospace';
-    ctx.fillText('Arrow keys to steer and accelerate', PVR.WIDTH / 2, 420);
-    ctx.fillText('Touch: left/right to steer, touch to go', PVR.WIDTH / 2, 445);
+    ctx.font = '56px monospace';
+    ctx.fillText('Arrow keys to steer and accelerate', PVR.WIDTH / 2, 1680);
+    ctx.fillText('Touch: left/right to steer, touch to go', PVR.WIDTH / 2, 1780);
   },
 
   // --- COUNTDOWN ---
@@ -223,9 +214,9 @@ PVR.Game = {
     PVR.Game.updateCars(dt, playerSegment);
 
     // background scroll
-    PVR.Game.skyOffset = PVR.Util.increase(PVR.Game.skyOffset, PVR.Game.skyOffset + playerSegment.curve * speedPercent * dt * PVR.WIDTH * 0.1, 1600);
-    PVR.Game.farOffset = PVR.Util.increase(PVR.Game.farOffset, PVR.Game.farOffset + playerSegment.curve * speedPercent * dt * PVR.WIDTH * 0.3, 1600);
-    PVR.Game.nearOffset = PVR.Util.increase(PVR.Game.nearOffset, PVR.Game.nearOffset + playerSegment.curve * speedPercent * dt * PVR.WIDTH * 0.6, 1600);
+    PVR.Game.skyOffset = PVR.Util.increase(PVR.Game.skyOffset, PVR.Game.skyOffset + playerSegment.curve * speedPercent * dt * 800 * 0.1, 1600);
+    PVR.Game.farOffset = PVR.Util.increase(PVR.Game.farOffset, PVR.Game.farOffset + playerSegment.curve * speedPercent * dt * 800 * 0.3, 1600);
+    PVR.Game.nearOffset = PVR.Util.increase(PVR.Game.nearOffset, PVR.Game.nearOffset + playerSegment.curve * speedPercent * dt * 800 * 0.6, 1600);
   },
 
   updateCars: function(dt, playerSegment) {
@@ -340,7 +331,7 @@ PVR.Game = {
     }
 
     var updown = playerY;
-    var shake = PVR.Game.shakeTimer > 0 ? 6 : 0;
+    var shake = PVR.Game.shakeTimer > 0 ? 24 : 0;
     PVR.Render.player(PVR.Game.speed, PVR.SPEED.MAX, PVR.Game.steer, 0, shake);
 
     PVR.Hud.draw(ctx, {
@@ -372,37 +363,37 @@ PVR.Game = {
     ctx.fillRect(0, 0, PVR.WIDTH, PVR.HEIGHT);
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 40px monospace';
+    ctx.font = 'bold 160px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('COURSE TERMINEE!', PVR.WIDTH / 2, 120);
+    ctx.fillText('COURSE TERMINEE!', PVR.WIDTH / 2, 480);
 
     ctx.fillStyle = '#FFD700';
-    ctx.font = 'bold 50px monospace';
+    ctx.font = 'bold 200px monospace';
     var suffix = 'th';
     var pos = PVR.Game.racePosition;
     if (pos === 1) suffix = 'st';
     else if (pos === 2) suffix = 'nd';
     else if (pos === 3) suffix = 'rd';
-    ctx.fillText(pos + suffix + ' place', PVR.WIDTH / 2, 220);
+    ctx.fillText(pos + suffix + ' place', PVR.WIDTH / 2, 880);
 
     ctx.fillStyle = '#90CAF9';
-    ctx.font = '24px monospace';
+    ctx.font = '96px monospace';
 
     var elapsed = PVR.RACE.DURATION;
     var min = Math.floor(elapsed / 60);
     var sec = elapsed % 60;
-    ctx.fillText('Time: ' + min + ':' + (sec < 10 ? '0' : '') + sec, PVR.WIDTH / 2, 290);
-    ctx.fillText('Rivals beaten: ' + (PVR.RACE.RIVAL_COUNT - pos + 1), PVR.WIDTH / 2, 330);
+    ctx.fillText('Time: ' + min + ':' + (sec < 10 ? '0' : '') + sec, PVR.WIDTH / 2, 1160);
+    ctx.fillText('Rivals beaten: ' + (PVR.RACE.RIVAL_COUNT - pos + 1), PVR.WIDTH / 2, 1320);
 
     if (pos <= 3) {
       ctx.fillStyle = '#FFD700';
-      ctx.font = 'bold 30px monospace';
-      ctx.fillText('MAGNIFIQUE!', PVR.WIDTH / 2, 390);
+      ctx.font = 'bold 120px monospace';
+      ctx.fillText('MAGNIFIQUE!', PVR.WIDTH / 2, 1560);
     }
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '18px monospace';
-    ctx.fillText('Press ENTER to race again', PVR.WIDTH / 2, 450);
+    ctx.font = '72px monospace';
+    ctx.fillText('Press ENTER to race again', PVR.WIDTH / 2, 1800);
   }
 
 };
