@@ -18,50 +18,50 @@ PVR.Hud = {
 
   drawSpeed: function(ctx, speed, maxSpeed) {
     var kmh = Math.round(speed / maxSpeed * 280);
-    var x = 80, y = PVR.HEIGHT - 160;
+    var x = 40, y = PVR.HEIGHT - 80;
 
     ctx.fillStyle = PVR.COLORS.HUD_BG;
-    PVR.Hud.roundRect(ctx, x, y - 20, 560, 120, 24);
+    PVR.Hud.roundRect(ctx, x, y - 10, 280, 60, 12);
 
     ctx.fillStyle = PVR.COLORS.HUD_TEXT;
-    ctx.font = 'bold 72px monospace';
+    ctx.font = 'bold 36px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText(kmh + ' km/h', x + 40, y + 64);
+    ctx.fillText(kmh + ' km/h', x + 20, y + 32);
 
-    var barW = 480;
+    var barW = 240;
     var pct = Math.min(speed / maxSpeed, 1);
     ctx.fillStyle = '#333';
-    PVR.Hud.roundRect(ctx, x + 20, y - 72, barW, 32, 12);
+    PVR.Hud.roundRect(ctx, x + 10, y - 36, barW, 16, 6);
     var barColor = pct > 0.8 ? '#E63946' : pct > 0.5 ? '#FFB347' : '#4CAF50';
     ctx.fillStyle = barColor;
-    PVR.Hud.roundRect(ctx, x + 20, y - 72, barW * pct, 32, 12);
+    PVR.Hud.roundRect(ctx, x + 10, y - 36, barW * pct, 16, 6);
   },
 
   drawTimer: function(ctx, timeLeft) {
     var secs = Math.max(0, Math.ceil(timeLeft));
-    var x = PVR.WIDTH / 2, y = 60;
+    var x = PVR.WIDTH / 2, y = 30;
 
     ctx.fillStyle = PVR.COLORS.HUD_BG;
-    PVR.Hud.roundRect(ctx, x - 200, y - 20, 400, 120, 24);
+    PVR.Hud.roundRect(ctx, x - 100, y - 10, 200, 60, 12);
 
     ctx.fillStyle = secs <= 10 ? '#E63946' : PVR.COLORS.HUD_TEXT;
-    ctx.font = 'bold 88px monospace';
+    ctx.font = 'bold 44px monospace';
     ctx.textAlign = 'center';
 
     var min = Math.floor(secs / 60);
     var sec = secs % 60;
     var display = min + ':' + (sec < 10 ? '0' : '') + sec;
-    ctx.fillText(display, x, y + 72);
+    ctx.fillText(display, x, y + 36);
   },
 
   drawPosition: function(ctx, position, total) {
-    var x = PVR.WIDTH - 80, y = PVR.HEIGHT - 160;
+    var x = PVR.WIDTH - 40, y = PVR.HEIGHT - 80;
 
     ctx.fillStyle = PVR.COLORS.HUD_BG;
-    PVR.Hud.roundRect(ctx, x - 480, y - 20, 480, 120, 24);
+    PVR.Hud.roundRect(ctx, x - 240, y - 10, 240, 60, 12);
 
     ctx.fillStyle = PVR.COLORS.HUD_TEXT;
-    ctx.font = 'bold 72px monospace';
+    ctx.font = 'bold 36px monospace';
     ctx.textAlign = 'right';
 
     var suffix = 'th';
@@ -69,7 +69,7 @@ PVR.Hud = {
     else if (position === 2) suffix = 'nd';
     else if (position === 3) suffix = 'rd';
 
-    ctx.fillText(position + suffix + ' / ' + (total + 1), x - 40, y + 64);
+    ctx.fillText(position + suffix + ' / ' + (total + 1), x - 20, y + 32);
   },
 
   drawCountdown: function(ctx, count) {
@@ -78,14 +78,14 @@ PVR.Hud = {
     var scale = 1 + (count % 1) * 0.3;
 
     ctx.save();
-    ctx.translate(PVR.WIDTH / 2, PVR.HEIGHT / 2 - 160);
+    ctx.translate(PVR.WIDTH / 2, PVR.HEIGHT / 2 - 80);
     ctx.scale(scale, scale);
 
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.font = 'bold 320px monospace';
+    ctx.font = 'bold 160px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(text, 8, 8);
+    ctx.fillText(text, 4, 4);
 
     ctx.fillStyle = num > 0 ? '#FFFFFF' : '#FFD700';
     ctx.fillText(text, 0, 0);

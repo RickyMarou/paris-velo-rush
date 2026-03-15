@@ -125,31 +125,31 @@ PVR.Game = {
     ctx.fillRect(0, 0, PVR.WIDTH, PVR.HEIGHT);
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 240px monospace';
+    ctx.font = 'bold 120px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('PARIS VELO', PVR.WIDTH / 2, 640);
+    ctx.fillText('PARIS VELO', PVR.WIDTH / 2, 300);
 
     ctx.fillStyle = '#FFD700';
-    ctx.font = 'bold 112px monospace';
-    ctx.fillText('RUSH', PVR.WIDTH / 2, 800);
+    ctx.font = 'bold 56px monospace';
+    ctx.fillText('RUSH', PVR.WIDTH / 2, 380);
 
     var playerImg = PVR.Assets['player_straight'];
     if (playerImg) {
-      var pw = playerImg.width * 1.2;
-      var ph = playerImg.height * 1.2;
-      ctx.drawImage(playerImg, PVR.WIDTH / 2 - pw / 2, 860, pw, ph);
+      var pw = playerImg.width * 0.6;
+      var ph = playerImg.height * 0.6;
+      ctx.drawImage(playerImg, PVR.WIDTH / 2 - pw / 2, 420, pw, ph);
     }
 
     if (Math.sin(PVR.Game.titleBlink * 3) > 0) {
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = '80px monospace';
-      ctx.fillText('PRESS ENTER TO START', PVR.WIDTH / 2, 1440);
+      ctx.font = '40px monospace';
+      ctx.fillText('PRESS ENTER TO START', PVR.WIDTH / 2, 720);
     }
 
     ctx.fillStyle = '#90CAF9';
-    ctx.font = '56px monospace';
-    ctx.fillText('Arrow keys to steer and accelerate', PVR.WIDTH / 2, 1680);
-    ctx.fillText('Touch: left/right to steer, touch to go', PVR.WIDTH / 2, 1780);
+    ctx.font = '28px monospace';
+    ctx.fillText('Arrow keys to steer and accelerate', PVR.WIDTH / 2, 840);
+    ctx.fillText('Touch: left/right to steer, touch to go', PVR.WIDTH / 2, 890);
   },
 
   // --- COUNTDOWN ---
@@ -214,9 +214,9 @@ PVR.Game = {
     PVR.Game.updateCars(dt, playerSegment);
 
     // background scroll
-    PVR.Game.skyOffset = PVR.Util.increase(PVR.Game.skyOffset, PVR.Game.skyOffset + playerSegment.curve * speedPercent * dt * 800 * 0.1, 1600);
-    PVR.Game.farOffset = PVR.Util.increase(PVR.Game.farOffset, PVR.Game.farOffset + playerSegment.curve * speedPercent * dt * 800 * 0.3, 1600);
-    PVR.Game.nearOffset = PVR.Util.increase(PVR.Game.nearOffset, PVR.Game.nearOffset + playerSegment.curve * speedPercent * dt * 800 * 0.6, 1600);
+    PVR.Game.skyOffset = PVR.Util.increase(PVR.Game.skyOffset, playerSegment.curve * speedPercent * dt * 800 * 0.1, 1600);
+    PVR.Game.farOffset = PVR.Util.increase(PVR.Game.farOffset, playerSegment.curve * speedPercent * dt * 800 * 0.3, 1600);
+    PVR.Game.nearOffset = PVR.Util.increase(PVR.Game.nearOffset, playerSegment.curve * speedPercent * dt * 800 * 0.6, 1600);
   },
 
   updateCars: function(dt, playerSegment) {
@@ -331,7 +331,7 @@ PVR.Game = {
     }
 
     var updown = playerY;
-    var shake = PVR.Game.shakeTimer > 0 ? 24 : 0;
+    var shake = PVR.Game.shakeTimer > 0 ? 12 : 0;
     PVR.Render.player(PVR.Game.speed, PVR.SPEED.MAX, PVR.Game.steer, 0, shake);
 
     PVR.Hud.draw(ctx, {
@@ -363,37 +363,37 @@ PVR.Game = {
     ctx.fillRect(0, 0, PVR.WIDTH, PVR.HEIGHT);
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 160px monospace';
+    ctx.font = 'bold 80px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('COURSE TERMINEE!', PVR.WIDTH / 2, 480);
+    ctx.fillText('COURSE TERMINEE!', PVR.WIDTH / 2, 240);
 
     ctx.fillStyle = '#FFD700';
-    ctx.font = 'bold 200px monospace';
+    ctx.font = 'bold 100px monospace';
     var suffix = 'th';
     var pos = PVR.Game.racePosition;
     if (pos === 1) suffix = 'st';
     else if (pos === 2) suffix = 'nd';
     else if (pos === 3) suffix = 'rd';
-    ctx.fillText(pos + suffix + ' place', PVR.WIDTH / 2, 880);
+    ctx.fillText(pos + suffix + ' place', PVR.WIDTH / 2, 440);
 
     ctx.fillStyle = '#90CAF9';
-    ctx.font = '96px monospace';
+    ctx.font = '48px monospace';
 
     var elapsed = PVR.RACE.DURATION;
     var min = Math.floor(elapsed / 60);
     var sec = elapsed % 60;
-    ctx.fillText('Time: ' + min + ':' + (sec < 10 ? '0' : '') + sec, PVR.WIDTH / 2, 1160);
-    ctx.fillText('Rivals beaten: ' + (PVR.RACE.RIVAL_COUNT - pos + 1), PVR.WIDTH / 2, 1320);
+    ctx.fillText('Time: ' + min + ':' + (sec < 10 ? '0' : '') + sec, PVR.WIDTH / 2, 580);
+    ctx.fillText('Rivals beaten: ' + (PVR.RACE.RIVAL_COUNT - pos + 1), PVR.WIDTH / 2, 660);
 
     if (pos <= 3) {
       ctx.fillStyle = '#FFD700';
-      ctx.font = 'bold 120px monospace';
-      ctx.fillText('MAGNIFIQUE!', PVR.WIDTH / 2, 1560);
+      ctx.font = 'bold 60px monospace';
+      ctx.fillText('MAGNIFIQUE!', PVR.WIDTH / 2, 780);
     }
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '72px monospace';
-    ctx.fillText('Press ENTER to race again', PVR.WIDTH / 2, 1800);
+    ctx.font = '36px monospace';
+    ctx.fillText('Press ENTER to race again', PVR.WIDTH / 2, 900);
   }
 
 };
