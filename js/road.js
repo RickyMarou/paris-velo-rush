@@ -22,7 +22,6 @@ PVR.Road = {
       p2: { world: { y: y,                 z: (n + 1) * PVR.ROAD.SEGMENT_LENGTH }, camera: {}, screen: {} },
       curve: curve,
       sprites: [],
-      cars: [],
       color: Math.floor(n / PVR.ROAD.RUMBLE_LENGTH) % 2 ? PVR.COLORS.DARK : PVR.COLORS.LIGHT
     });
   },
