@@ -247,6 +247,18 @@ PVR.Game = {
         segment.p2.screen.x, segment.p2.screen.y, segment.p2.screen.w,
         fog, segment.color);
 
+      var ci = segment.index % PVR.CHEVRON_INTERVAL;
+      if (ci === 0) {
+        PVR.Render.chevron(
+          segment.p1.screen.x, segment.p1.screen.y, segment.p1.screen.w,
+          segment.p2.screen.x, segment.p2.screen.y, segment.p2.screen.w);
+      }
+      if (ci === 3) {
+        PVR.Render.roadStamp(PVR.Assets.cyclist_pictogram,
+          segment.p1.screen.x, segment.p1.screen.y, segment.p1.screen.w,
+          segment.p2.screen.x, segment.p2.screen.y, segment.p2.screen.w);
+      }
+
       maxy = segment.p2.screen.y;
     }
 

@@ -16,6 +16,7 @@ PVR.Placeholder = {
     PVR.Placeholder.buildRoadside();
     PVR.Placeholder.buildRivals();
     PVR.Placeholder.buildBackgrounds();
+    PVR.Placeholder.buildCyclistPictogram();
   },
 
   buildPlayerBike: function() {
@@ -343,6 +344,72 @@ PVR.Placeholder = {
       xp += nw + 6;
     }
     PVR.Assets.bg_near = near;
+  },
+
+  buildCyclistPictogram: function() {
+    var c = PVR.Placeholder.createCanvas(40, 56);
+    var ctx = c.getContext('2d');
+
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    // rear wheel
+    ctx.beginPath();
+    ctx.arc(12, 44, 8, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // front wheel
+    ctx.beginPath();
+    ctx.arc(30, 44, 8, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // frame: seat post to bottom bracket
+    ctx.beginPath();
+    ctx.moveTo(16, 28);
+    ctx.lineTo(12, 44);
+    ctx.stroke();
+
+    // frame: bottom bracket to front fork
+    ctx.beginPath();
+    ctx.moveTo(12, 44);
+    ctx.lineTo(26, 36);
+    ctx.lineTo(30, 44);
+    ctx.stroke();
+
+    // frame: top tube
+    ctx.beginPath();
+    ctx.moveTo(16, 28);
+    ctx.lineTo(26, 30);
+    ctx.lineTo(26, 36);
+    ctx.stroke();
+
+    // handlebars
+    ctx.beginPath();
+    ctx.moveTo(24, 26);
+    ctx.lineTo(28, 28);
+    ctx.stroke();
+
+    // body (torso leaning forward)
+    ctx.beginPath();
+    ctx.moveTo(16, 28);
+    ctx.lineTo(22, 16);
+    ctx.stroke();
+
+    // arms to handlebars
+    ctx.beginPath();
+    ctx.moveTo(22, 16);
+    ctx.lineTo(26, 26);
+    ctx.stroke();
+
+    // head
+    ctx.beginPath();
+    ctx.arc(22, 10, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    PVR.Assets.cyclist_pictogram = c;
   }
 
 };

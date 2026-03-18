@@ -81,6 +81,8 @@ PVR.BG = {
   NEAR_H: 200
 };
 
+PVR.CHEVRON_INTERVAL = 30;
+
 PVR.DEBUG = {
   HIDE_SPRITES: false
 };
