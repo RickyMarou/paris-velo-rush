@@ -1,6 +1,6 @@
 # Paris Velo
 
-A comical pseudo-3D arcade road racer set in Paris. You ride a tiny bike through Paris traffic, dodging scooters, delivery trucks, and confused tourists.
+A comical pseudo-3D arcade road racer set in Paris. You ride a tiny bike through the streets of Paris, reaching the finish line as fast as possible.
 
 ## Reference
 
@@ -13,26 +13,29 @@ A comical pseudo-3D arcade road racer set in Paris. You ride a tiny bike through
 
 - Push straight to `main` — no branches, no PRs
 
-## Game Plan
+## Game Design
+
+The game is NOT a race against other riders. It's a time-trial: reach the finish line as fast as possible. The timer counts up from 0:00. NPCs (pedestrians, scooters, trucks) are obstacles to dodge — they will be added later.
 
 ### Tech
 - Browser game, vanilla JS + HTML5 Canvas
-- Logical resolution: 800x500, scaled to fit screen via CSS
+- Logical resolution: 1600x1000, scaled to fit screen via CSS
 - No framework — keeping it simple
+- No ES modules (must work from `file://`). Scripts loaded via `<script>` tags. Single `PVR` global namespace.
 
 ### Core Mechanics
 - Pseudo-3D road rendering (segment-based projection)
-- 3-layer parallax background (sky, far skyline, near buildings)
+- 2-layer parallax background (sky, near rooftops)
 - Player bike with 5 steering frames (center, lean L1/L2, lean R1/R2)
-- Rival vehicles as scaled sprites approaching from distance
 - Roadside Parisian landmarks and props as billboard sprites
-- Collision with rivals slows you down
 - Speed control (accelerate / brake)
+- Off-road friction slows you down
+- Timer counts up — goal is best time to finish line
 
 ### Scenes
-1. **Title screen** — logo, "Press Start"
+1. **Title screen** — logo, "Press Enter"
 2. **Racing** — the main game loop
-3. **Results** — time, position, score
+3. **Results** — final time (not yet implemented)
 
 ### Road Features
 - Straight segments
@@ -41,18 +44,12 @@ A comical pseudo-3D arcade road racer set in Paris. You ride a tiny bike through
 - Alternating road color segments for speed illusion
 
 ### Assets
-- All sprites are flat PNGs on transparent backgrounds
+- All sprites are 4x resolution flat PNGs on transparent backgrounds
 - Backgrounds are wide horizontal strips (1600px wide) that tile seamlessly
 - See `docs/art-brief.md` for full asset list and specs
 
-### Milestones
-1. Road rendering — straight road with segment projection
-2. Curves and hills
-3. Player bike with steering
-4. Parallax background
-5. Roadside sprites
-6. Rival vehicles and collision
-7. Speed / scoring / timer
-8. Title and results screens
-9. Mobile touch controls
-10. Polish and juice
+### What's Next
+- Fix floating roadside sprites
+- Add NPC obstacles (scooters, trucks, pedestrians) — dodge them, not race them
+- Implement finish line and results screen
+- Polish and juice
