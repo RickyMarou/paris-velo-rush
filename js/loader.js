@@ -29,7 +29,6 @@ PVR.Loader = {
     'trash_bin':       'assets/sprites/trash_bin.png',
     'bollard':         'assets/sprites/bollard.png',
     'bg_sky':          'assets/backgrounds/bg_sky.png',
-    'bg_far':          'assets/backgrounds/bg_far.png',
     'bg_near':         'assets/backgrounds/bg_near.png'
   },
 

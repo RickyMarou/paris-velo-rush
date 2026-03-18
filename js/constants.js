@@ -7,8 +7,7 @@ PVR.STEP = 1 / PVR.FPS;
 
 PVR.ROAD = {
   LENGTH: 200,
-  WIDTH: 2000,
-  LANES: 3,
+  WIDTH: 660,
   SEGMENT_LENGTH: 200,
   RUMBLE_LENGTH: 3,
   CAMERA_HEIGHT: 1000,
@@ -40,19 +39,17 @@ PVR.COLORS = {
   TREE: '#005108',
   FOG: '#005108',
 
-  LIGHT: { road: '#6B6B6B', grass: '#10AA10', rumble: '#555555', lane: '#CCCCCC' },
-  DARK:  { road: '#696969', grass: '#009A00', rumble: '#BBBBBB', lane: '#696969' },
+  LIGHT: { road: '#6B6B6B', concrete: '#B0B0B0', rumble: '#FFFFFF' },
+  DARK:  { road: '#696969', concrete: '#989898', rumble: '#FFFFFF' },
 
-  START: { road: '#FFFFFF', grass: '#10AA10', rumble: '#FFFFFF' },
-  FINISH: { road: '#000000', grass: '#10AA10', rumble: '#000000' },
+  START: { road: '#FFFFFF', concrete: '#B0B0B0', rumble: '#FFFFFF' },
+  FINISH: { road: '#000000', concrete: '#989898', rumble: '#000000' },
 
   HUD_TEXT: '#FFFFFF',
   HUD_BG: 'rgba(0, 0, 0, 0.6)'
 };
 
 PVR.RACE = {
-  DURATION: 90,
-  RIVAL_COUNT: 60,
   COUNTDOWN_SECS: 3
 };
 
@@ -66,4 +63,15 @@ PVR.HILL = {
   LOW: 20,
   MEDIUM: 40,
   HIGH: 60
+};
+
+PVR.BG = {
+  SKY_Y: 0,
+  SKY_H: 384,
+  NEAR_Y: 260,
+  NEAR_H: 200
+};
+
+PVR.DEBUG = {
+  HIDE_SPRITES: false
 };

@@ -15,12 +15,11 @@ PVR.Render = {
   background: function(skyOffset, farOffset, nearOffset) {
     var ctx = PVR.Render.ctx;
 
-    ctx.fillStyle = PVR.COLORS.LIGHT.grass;
+    ctx.fillStyle = PVR.COLORS.LIGHT.concrete;
     ctx.fillRect(0, 0, PVR.WIDTH, PVR.HEIGHT);
 
-    PVR.Render.drawParallaxLayer(PVR.Assets.bg_sky, skyOffset, 0, PVR.WIDTH, 500);
-    PVR.Render.drawParallaxLayer(PVR.Assets.bg_far, farOffset, 340, PVR.WIDTH, 160);
-    PVR.Render.drawParallaxLayer(PVR.Assets.bg_near, nearOffset, 430, PVR.WIDTH, 160);
+    PVR.Render.drawParallaxLayer(PVR.Assets.bg_sky, skyOffset, PVR.BG.SKY_Y, PVR.WIDTH, PVR.BG.SKY_H);
+    PVR.Render.drawParallaxLayer(PVR.Assets.bg_near, nearOffset, PVR.BG.NEAR_Y, PVR.WIDTH, PVR.BG.NEAR_H);
   },
 
   drawParallaxLayer: function(img, offset, y, w, h) {
@@ -45,29 +44,12 @@ PVR.Render = {
     var ctx = PVR.Render.ctx;
 
     var gx1 = 0, gy1 = y2, gx2 = PVR.WIDTH, gy2 = y1;
-    ctx.fillStyle = color.grass;
+    ctx.fillStyle = color.concrete;
     ctx.fillRect(gx1, gy1, gx2, gy2 - gy1);
 
     PVR.Render.polygon(ctx, x1 - w1 * 1.2, y1, x1 - w1, y1, x2 - w2, y2, x2 - w2 * 1.2, y2, color.rumble);
     PVR.Render.polygon(ctx, x1 + w1, y1, x1 + w1 * 1.2, y1, x2 + w2 * 1.2, y2, x2 + w2, y2, color.rumble);
     PVR.Render.polygon(ctx, x1 - w1, y1, x1 + w1, y1, x2 + w2, y2, x2 - w2, y2, color.road);
-
-    if (color.lane) {
-      var lw1 = w1 * 2 / PVR.ROAD.LANES;
-      var lw2 = w2 * 2 / PVR.ROAD.LANES;
-      var lx1 = x1 - w1 + lw1;
-      var lx2 = x2 - w2 + lw2;
-      var lineW1 = w1 / 20;
-      var lineW2 = w2 / 20;
-      for (var lane = 1; lane < PVR.ROAD.LANES; lane++) {
-        PVR.Render.polygon(ctx,
-          lx1 - lineW1, y1, lx1 + lineW1, y1,
-          lx2 + lineW2, y2, lx2 - lineW2, y2,
-          color.lane);
-        lx1 += lw1;
-        lx2 += lw2;
-      }
-    }
 
     if (fog < 1) {
       ctx.fillStyle = 'rgba(0, 81, 8, ' + (1 - fog) + ')';
