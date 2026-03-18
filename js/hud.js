@@ -6,8 +6,7 @@ PVR.Hud = {
     ctx.save();
 
     PVR.Hud.drawSpeed(ctx, state.speed, state.maxSpeed);
-    PVR.Hud.drawTimer(ctx, state.timeLeft);
-    PVR.Hud.drawPosition(ctx, state.position, state.totalRivals);
+    PVR.Hud.drawTimer(ctx, state.elapsed);
 
     if (state.countdown > 0) {
       PVR.Hud.drawCountdown(ctx, state.countdown);
@@ -37,14 +36,14 @@ PVR.Hud = {
     PVR.Hud.roundRect(ctx, x + 10, y - 36, barW * pct, 16, 6);
   },
 
-  drawTimer: function(ctx, timeLeft) {
-    var secs = Math.max(0, Math.ceil(timeLeft));
+  drawTimer: function(ctx, elapsed) {
+    var secs = Math.floor(elapsed);
     var x = PVR.WIDTH / 2, y = 30;
 
     ctx.fillStyle = PVR.COLORS.HUD_BG;
     PVR.Hud.roundRect(ctx, x - 100, y - 10, 200, 60, 12);
 
-    ctx.fillStyle = secs <= 10 ? '#E63946' : PVR.COLORS.HUD_TEXT;
+    ctx.fillStyle = PVR.COLORS.HUD_TEXT;
     ctx.font = 'bold 44px monospace';
     ctx.textAlign = 'center';
 
@@ -52,24 +51,6 @@ PVR.Hud = {
     var sec = secs % 60;
     var display = min + ':' + (sec < 10 ? '0' : '') + sec;
     ctx.fillText(display, x, y + 36);
-  },
-
-  drawPosition: function(ctx, position, total) {
-    var x = PVR.WIDTH - 40, y = PVR.HEIGHT - 80;
-
-    ctx.fillStyle = PVR.COLORS.HUD_BG;
-    PVR.Hud.roundRect(ctx, x - 240, y - 10, 240, 60, 12);
-
-    ctx.fillStyle = PVR.COLORS.HUD_TEXT;
-    ctx.font = 'bold 36px monospace';
-    ctx.textAlign = 'right';
-
-    var suffix = 'th';
-    if (position === 1) suffix = 'st';
-    else if (position === 2) suffix = 'nd';
-    else if (position === 3) suffix = 'rd';
-
-    ctx.fillText(position + suffix + ' / ' + (total + 1), x - 20, y + 32);
   },
 
   drawCountdown: function(ctx, count) {

@@ -15,8 +15,7 @@ PVR.Game = {
   farOffset: 0,
   nearOffset: 0,
 
-  cars: [],
-  timeLeft: 0,
+  elapsed: 0,
   countdown: 0,
   shakeTimer: 0,
 
@@ -33,29 +32,9 @@ PVR.Game = {
 
     PVR.Loader.load(function() {
       PVR.Road.buildTrack();
-      PVR.Game.resetCars();
       PVR.Game.lastTime = PVR.Util.timestamp();
       requestAnimationFrame(PVR.Game.frame);
     });
-  },
-
-  resetCars: function() {
-    PVR.Game.cars = [];
-    var segments = PVR.Road.segments;
-    for (var i = 0; i < PVR.RACE.RIVAL_COUNT; i++) {
-      var segIdx = PVR.Util.randomInt(10, segments.length - 10);
-      var car = {
-        offset: -0.8 + Math.random() * 1.6,
-        z: segIdx * PVR.ROAD.SEGMENT_LENGTH + Math.random() * PVR.ROAD.SEGMENT_LENGTH,
-        sprite: PVR.Util.randomChoice(['rival_bike', 'rival_scooter', 'rival_pedestrian', 'rival_truck']),
-        speed: PVR.SPEED.MAX / 4 + Math.random() * PVR.SPEED.MAX / 2,
-        passed: false
-      };
-      PVR.Game.cars.push(car);
-
-      var seg = PVR.Road.findSegment(car.z);
-      seg.cars.push(car);
-    }
   },
 
   frame: function(timestamp) {
@@ -101,14 +80,9 @@ PVR.Game = {
     PVR.Game.speed = 0;
     PVR.Game.playerX = 0;
     PVR.Game.steer = 0;
-    PVR.Game.timeLeft = PVR.RACE.DURATION;
+    PVR.Game.elapsed = 0;
     PVR.Game.countdown = PVR.RACE.COUNTDOWN_SECS + 1;
     PVR.Game.shakeTimer = 0;
-
-    for (var i = 0; i < PVR.Road.segments.length; i++) {
-      PVR.Road.segments[i].cars = [];
-    }
-    PVR.Game.resetCars();
 
     PVR.Game.state = 'countdown';
   },
@@ -168,12 +142,7 @@ PVR.Game = {
     var speedPercent = PVR.Game.speed / PVR.SPEED.MAX;
     var dx = dt * 2 * speedPercent;
 
-    PVR.Game.timeLeft -= dt;
-    if (PVR.Game.timeLeft <= 0) {
-      PVR.Game.timeLeft = 0;
-      PVR.Game.state = 'results';
-      return;
-    }
+    PVR.Game.elapsed += dt;
 
     if (PVR.Game.shakeTimer > 0) {
       PVR.Game.shakeTimer -= dt;
@@ -210,56 +179,11 @@ PVR.Game = {
     // advance position
     PVR.Game.position = PVR.Util.increase(PVR.Game.position, dt * PVR.Game.speed, PVR.Road.trackLength);
 
-    // update cars
-    PVR.Game.updateCars(dt, playerSegment);
-
     // background scroll
-    PVR.Game.skyOffset = PVR.Util.increase(PVR.Game.skyOffset, playerSegment.curve * speedPercent * dt * 800 * 0.1, 1600);
-    PVR.Game.farOffset = PVR.Util.increase(PVR.Game.farOffset, playerSegment.curve * speedPercent * dt * 800 * 0.3, 1600);
-    PVR.Game.nearOffset = PVR.Util.increase(PVR.Game.nearOffset, playerSegment.curve * speedPercent * dt * 800 * 0.6, 1600);
+    var curveScroll = playerSegment.curve * speedPercent * dt;
+    PVR.Game.skyOffset = PVR.Util.increase(PVR.Game.skyOffset, curveScroll * 20, 1600);
+    PVR.Game.nearOffset = PVR.Util.increase(PVR.Game.nearOffset, curveScroll * 60, 1600);
   },
-
-  updateCars: function(dt, playerSegment) {
-    var playerW = 0.06;
-    var position = 0;
-
-    for (var i = 0; i < PVR.Game.cars.length; i++) {
-      var car = PVR.Game.cars[i];
-      var oldSeg = PVR.Road.findSegment(car.z);
-
-      car.z = PVR.Util.increase(car.z, dt * car.speed, PVR.Road.trackLength);
-
-      var newSeg = PVR.Road.findSegment(car.z);
-
-      if (oldSeg !== newSeg) {
-        var idx = oldSeg.cars.indexOf(car);
-        if (idx > -1) oldSeg.cars.splice(idx, 1);
-        newSeg.cars.push(car);
-      }
-
-      // check collision with player
-      if (car.speed < PVR.Game.speed) {
-        var carW = 0.04;
-        if (newSeg.index === playerSegment.index ||
-            newSeg.index === playerSegment.index + 1 ||
-            newSeg.index === playerSegment.index - 1) {
-          if (PVR.Util.overlap(PVR.Game.playerX, playerW, car.offset, carW, 1.2)) {
-            PVR.Game.speed = car.speed * 0.7;
-            PVR.Game.shakeTimer = 0.3;
-          }
-        }
-      }
-
-      // track position
-      if (car.z > PVR.Game.position + PVR.ROAD.PLAYER_Z) {
-        position++;
-      }
-    }
-
-    PVR.Game.racePosition = position + 1;
-  },
-
-  racePosition: 1,
 
   renderRacing: function(dt) {
     var ctx = PVR.Game.ctx;
@@ -317,17 +241,14 @@ PVR.Game = {
       var segIdx2 = (baseSegment.index + n) % segCount;
       var seg = segments[segIdx2];
 
-      for (var s = 0; s < seg.sprites.length; s++) {
-        var sp = seg.sprites[s];
-        var spriteScale = seg.p1.screen.scale;
-        PVR.Render.sprite(seg.p1.screen.x, seg.p1.screen.y, seg.p1.screen.w, sp.source, sp.offset, maxy, spriteScale);
+      if (!PVR.DEBUG.HIDE_SPRITES) {
+        for (var s = 0; s < seg.sprites.length; s++) {
+          var sp = seg.sprites[s];
+          var spriteScale = seg.p1.screen.scale;
+          PVR.Render.sprite(seg.p1.screen.x, seg.p1.screen.y, seg.p1.screen.w, sp.source, sp.offset, maxy, spriteScale);
+        }
       }
 
-      for (var c = 0; c < seg.cars.length; c++) {
-        var car = seg.cars[c];
-        var carScale = seg.p1.screen.scale;
-        PVR.Render.sprite(seg.p1.screen.x, seg.p1.screen.y, seg.p1.screen.w, car.sprite, car.offset, maxy, carScale);
-      }
     }
 
     var updown = playerY;
@@ -337,9 +258,7 @@ PVR.Game = {
     PVR.Hud.draw(ctx, {
       speed: PVR.Game.speed,
       maxSpeed: PVR.SPEED.MAX,
-      timeLeft: PVR.Game.timeLeft,
-      position: PVR.Game.racePosition,
-      totalRivals: PVR.RACE.RIVAL_COUNT,
+      elapsed: PVR.Game.elapsed,
       countdown: PVR.Game.state === 'countdown' ? PVR.Game.countdown : 0
     });
   },
