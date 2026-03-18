@@ -16,7 +16,7 @@ PVR.Hud = {
   },
 
   drawSpeed: function(ctx, speed, maxSpeed) {
-    var kmh = Math.round(speed / maxSpeed * 280);
+    var kmh = Math.round(speed / maxSpeed * PVR.SPEED.MAX_KMH);
     var x = 40, y = PVR.HEIGHT - 80;
 
     ctx.fillStyle = PVR.COLORS.HUD_BG;

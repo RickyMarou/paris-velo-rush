@@ -22,17 +22,26 @@ PVR.ROAD.PLAYER_Z = PVR.ROAD.CAMERA_HEIGHT * PVR.ROAD.CAMERA_DEPTH;
 
 PVR.SPEED = {
   MAX: PVR.ROAD.SEGMENT_LENGTH / PVR.STEP,
-  ACCEL: null,
   BRAKE: null,
   DECEL: null,
   OFF_ROAD: null,
-  CENTRIFUGAL: 0.3
+  CENTRIFUGAL: 0.3,
+  // 4 acceleration zones: [threshold in km/h, accel factor]
+  // accel factor is multiplied by MAX/5 (the base accel rate)
+  ACCEL_ZONES: [
+    { upTo: 5,  factor: 0.4 },  // 0-5 km/h: slow start (pedaling from standstill)
+    { upTo: 25, factor: 1.0 },  // 5-25 km/h: ebike assist, fast cruising accel
+    { upTo: 30, factor: 0.4 },  // 25-30 km/h: assist fading
+    { upTo: 35, factor: 0.15 }  // 30-35 km/h: pure leg power, very slow
+  ],
+  MAX_KMH: 35,
+  TURN_MAX_KMH: 22
 };
 
-PVR.SPEED.ACCEL = PVR.SPEED.MAX / 5;
 PVR.SPEED.BRAKE = -PVR.SPEED.MAX;
 PVR.SPEED.DECEL = -PVR.SPEED.MAX / 5;
 PVR.SPEED.OFF_ROAD = PVR.SPEED.MAX / 4;
+PVR.SPEED.BASE_ACCEL = PVR.SPEED.MAX / 5;
 
 PVR.COLORS = {
   SKY: '#72D7EE',
@@ -68,7 +77,7 @@ PVR.HILL = {
 PVR.BG = {
   SKY_Y: 0,
   SKY_H: 384,
-  NEAR_Y: 260,
+  NEAR_Y: 300,
   NEAR_H: 200
 };
 

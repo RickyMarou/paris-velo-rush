@@ -159,11 +159,25 @@ PVR.Game = {
 
     // speed
     if (PVR.Input.isAccelerate()) {
-      PVR.Game.speed = PVR.Util.accelerate(PVR.Game.speed, PVR.SPEED.ACCEL, dt);
+      var kmh = PVR.Game.speed / PVR.SPEED.MAX * PVR.SPEED.MAX_KMH;
+      var zones = PVR.SPEED.ACCEL_ZONES;
+      var factor = zones[zones.length - 1].factor;
+      for (var z = 0; z < zones.length; z++) {
+        if (kmh < zones[z].upTo) { factor = zones[z].factor; break; }
+      }
+      PVR.Game.speed = PVR.Util.accelerate(PVR.Game.speed, PVR.SPEED.BASE_ACCEL * factor, dt);
     } else if (PVR.Input.isBrake()) {
       PVR.Game.speed = PVR.Util.accelerate(PVR.Game.speed, PVR.SPEED.BRAKE, dt);
     } else {
       PVR.Game.speed = PVR.Util.accelerate(PVR.Game.speed, PVR.SPEED.DECEL, dt);
+    }
+
+    // turning speed cap
+    if (PVR.Game.steer !== 0) {
+      var turnMax = PVR.SPEED.MAX * PVR.SPEED.TURN_MAX_KMH / PVR.SPEED.MAX_KMH;
+      if (PVR.Game.speed > turnMax) {
+        PVR.Game.speed = PVR.Util.accelerate(PVR.Game.speed, PVR.SPEED.DECEL * 2, dt);
+      }
     }
 
     // off-road
