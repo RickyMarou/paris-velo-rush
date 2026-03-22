@@ -29,10 +29,10 @@ PVR.SPEED = {
   // 4 acceleration zones: [threshold in km/h, accel factor]
   // accel factor is multiplied by MAX/5 (the base accel rate)
   ACCEL_ZONES: [
-    { upTo: 5,  factor: 0.4 },  // 0-5 km/h: slow start (pedaling from standstill)
-    { upTo: 25, factor: 1.0 },  // 5-25 km/h: ebike assist, fast cruising accel
-    { upTo: 30, factor: 0.4 },  // 25-30 km/h: assist fading
-    { upTo: 35, factor: 0.15 }  // 30-35 km/h: pure leg power, very slow
+    { upTo: 5,  factor: 0.4, pedalRate: 1.5 },  // 0-5 km/h: slow crank from standstill
+    { upTo: 25, factor: 1.0, pedalRate: 4.0 },   // 5-25 km/h: brisk cruising cadence
+    { upTo: 30, factor: 0.4, pedalRate: 5.0 },   // 25-30 km/h: fast spinning
+    { upTo: 35, factor: 0.15, pedalRate: 6.0 }   // 30-35 km/h: legs going wild
   ],
   MAX_KMH: 35,
   TURN_MAX_KMH: 22
@@ -77,12 +77,13 @@ PVR.HILL = {
 PVR.BG = {
   SKY_Y: 0,
   SKY_H: 384,
-  NEAR_Y: 300,
-  NEAR_H: 200
+  NEAR_Y: 200,
+  NEAR_H: 386
 };
 
 PVR.CHEVRON_INTERVAL = 30;
 
 PVR.DEBUG = {
-  HIDE_SPRITES: false
+  HIDE_SPRITES: false,
+  HIDE_PLAYER: false
 };
