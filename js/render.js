@@ -57,47 +57,30 @@ PVR.Render = {
     }
   },
 
-  roadStamp: function(img, x1, y1, w1, x2, y2, w2) {
+  drawRoadStamps: function(segments) {
+    for (var i = segments.length - 1; i >= 0; i--) {
+      var seg = segments[i];
+      if (seg.index % PVR.ROAD_STAMP_INTERVAL === 0) {
+        PVR.Render.roadStamp(PVR.Assets.road_marking, seg);
+      }
+    }
+  },
+
+  roadStamp: function(img, seg) {
     if (!img) return;
+    var x1 = seg.p1.screen.x, y1 = seg.p1.screen.y, w1 = seg.p1.screen.w;
+    var x2 = seg.p2.screen.x, y2 = seg.p2.screen.y, w2 = seg.p2.screen.w;
     var ctx = PVR.Render.ctx;
     var cx = (x1 + x2) / 2;
     var segH = y1 - y2;
     if (segH < 1) return;
     // width = fraction of road, height = segment height (perspective-squashed)
-    var dw = (w1 + w2) * 0.4;
-    var dh = segH * 3;
+    var dw = (w1 + w2) * 0.5;
+    var dh = segH * 4;
     var cy = y1 - dh / 2;
     ctx.globalAlpha = 0.9;
     ctx.drawImage(img, cx - dw / 2, cy, dw, dh);
     ctx.globalAlpha = 1.0;
-  },
-
-  chevron: function(x1, y1, w1, x2, y2, w2) {
-    var ctx = PVR.Render.ctx;
-    var segH = y1 - y2;
-    if (segH < 1) return;
-
-    // the chevron spans this segment — perspective is built into the
-    // segment coords: y1/w1 = near (bottom, wider), y2/w2 = far (top, narrower)
-    var arm1 = w1 * 0.35;
-    var thick = segH * 0.35;
-
-    var x25 = PVR.Util.interpolate(x1, x2, 0.25);
-    var y25 = PVR.Util.interpolate(y1, y2, 0.25);
-    var w25 = PVR.Util.interpolate(w1, w2, 0.25) * 0.35;
-
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-
-    // single V: tip at far (y2), arms at near (y1)
-    ctx.beginPath();
-    ctx.moveTo(x2, y2);
-    ctx.lineTo(x1 - arm1, y1);
-    ctx.lineTo(x25 - w25, y25);
-    ctx.lineTo(x2, y2 + thick);
-    ctx.lineTo(x25 + w25, y25);
-    ctx.lineTo(x1 + arm1, y1);
-    ctx.closePath();
-    ctx.fill();
   },
 
   polygon: function(ctx, x1, y1, x2, y2, x3, y3, x4, y4, color) {

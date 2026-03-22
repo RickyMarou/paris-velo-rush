@@ -250,30 +250,19 @@ PVR.Game = {
         segment.p2.screen.x, segment.p2.screen.y, segment.p2.screen.w,
         fog, segment.color);
 
-      var ci = segment.index % PVR.CHEVRON_INTERVAL;
-      if (ci === 0) {
-        PVR.Render.chevron(
-          segment.p1.screen.x, segment.p1.screen.y, segment.p1.screen.w,
-          segment.p2.screen.x, segment.p2.screen.y, segment.p2.screen.w);
-      }
-      if (ci === 3) {
-        PVR.Render.roadStamp(PVR.Assets.arrow_pictogram,
-          segment.p1.screen.x, segment.p1.screen.y, segment.p1.screen.w,
-          segment.p2.screen.x, segment.p2.screen.y, segment.p2.screen.w);
-      }
-      if (ci === 7) {
-        PVR.Render.roadStamp(PVR.Assets.cyclist_pictogram,
-          segment.p1.screen.x, segment.p1.screen.y, segment.p1.screen.w,
-          segment.p2.screen.x, segment.p2.screen.y, segment.p2.screen.w);
-      }
-
       maxy = segment.p2.screen.y;
     }
 
-    // render sprites and cars back-to-front
+    // render road stamps and sprites back-to-front (after all segments, so they don't get clipped)
+    var visibleSegments = [];
     for (n = PVR.ROAD.DRAW_DISTANCE - 1; n > 0; n--) {
       var segIdx2 = (baseSegment.index + n) % segCount;
-      var seg = segments[segIdx2];
+      visibleSegments.push(segments[segIdx2]);
+    }
+    PVR.Render.drawRoadStamps(visibleSegments);
+
+    for (n = 0; n < visibleSegments.length; n++) {
+      var seg = visibleSegments[n];
 
       if (!PVR.DEBUG.HIDE_SPRITES) {
         for (var s = 0; s < seg.sprites.length; s++) {

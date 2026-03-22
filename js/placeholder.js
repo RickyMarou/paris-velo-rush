@@ -17,7 +17,6 @@ PVR.Placeholder = {
     PVR.Placeholder.buildRivals();
     PVR.Placeholder.buildBackgrounds();
     PVR.Placeholder.buildCyclistPictogram();
-    PVR.Placeholder.buildArrowPictogram();
   },
 
   buildPlayerBike: function() {
@@ -348,7 +347,8 @@ PVR.Placeholder = {
   },
 
   buildCyclistPictogram: function() {
-    var c = PVR.Placeholder.createCanvas(200, 260);
+    // Single canvas: cyclist on top (near player), arrow below (toward horizon)
+    var c = PVR.Placeholder.createCanvas(200, 460);
     var ctx = c.getContext('2d');
 
     ctx.fillStyle = '#FFFFFF';
@@ -356,76 +356,73 @@ PVR.Placeholder = {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    // --- WHEELS: two solid discs at the bottom ---
-    ctx.beginPath();
-    ctx.arc(74, 172, 22, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(132, 172, 22, 0, Math.PI * 2);
-    ctx.fill();
-
-    // --- HEAD: circle ---
-    ctx.beginPath();
-    ctx.arc(85, 74, 8, 0, Math.PI * 2);
-    ctx.fill();
-
-    // --- BODY: thick silhouette, rider facing left, torso leaning like \ ---
-    ctx.lineWidth = 14;
-    ctx.beginPath();
-    ctx.moveTo(92, 93);
-    ctx.lineTo(105, 123);
-    ctx.stroke();
-
-    // --- ARM: reaching forward-left-down toward handlebar ---
-    ctx.lineWidth = 8;
-    ctx.beginPath();
-    ctx.moveTo(92, 100);
-    ctx.lineTo(78, 120);
-    ctx.stroke();
-
-    // --- LEGS ---
-    // front leg (left): thigh goes forward then shin drops — the "7" shape
-    ctx.lineWidth = 7;
-    ctx.beginPath();
-    ctx.moveTo(102, 125);
-    ctx.lineTo(88, 133);
-    ctx.lineTo(88, 147);
-    ctx.stroke();
-
-    // back leg (right): extends down longer toward rear wheel
-    ctx.lineWidth = 7;
-    ctx.beginPath();
-    ctx.moveTo(105, 127);
-    ctx.lineTo(105, 163);
-    ctx.stroke();
-
-    PVR.Assets.cyclist_pictogram = c;
-  },
-
-  buildArrowPictogram: function() {
-    // Canvas top = toward player, canvas bottom = toward horizon
-    // Arrow points UP (toward horizon = forward direction)
-    var c = PVR.Placeholder.createCanvas(50, 80);
-    var ctx = c.getContext('2d');
+    // ====== ARROW (top half, y 20-180) ======
 
     ctx.fillStyle = '#FFFFFF';
+    var ax = 100, ay = 20;
 
-    // shaft
-    ctx.fillRect(18, 35, 14, 45);
-
-    // arrowhead pointing up
+    // arrowhead (taller, narrower triangle) + shaft
     ctx.beginPath();
-    ctx.moveTo(25, 0);
-    ctx.lineTo(0, 35);
-    ctx.lineTo(17, 35);
-    ctx.lineTo(17, 80);
-    ctx.lineTo(33, 80);
-    ctx.lineTo(33, 35);
-    ctx.lineTo(50, 35);
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(ax - 22, ay + 70);
+    ctx.lineTo(ax - 9, ay + 70);
+    ctx.lineTo(ax - 9, ay + 150);
+    ctx.lineTo(ax + 9, ay + 150);
+    ctx.lineTo(ax + 9, ay + 70);
+    ctx.lineTo(ax + 22, ay + 70);
     ctx.closePath();
     ctx.fill();
 
-    PVR.Assets.arrow_pictogram = c;
+    // ====== CYCLIST (bottom half, y 240-400) ======
+
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    var cy = 200;
+
+    // wheels: two solid discs
+    ctx.beginPath();
+    ctx.arc(74, cy + 172, 22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(132, cy + 172, 22, 0, Math.PI * 2);
+    ctx.fill();
+
+    // head
+    ctx.beginPath();
+    ctx.arc(85, cy + 74, 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    // torso leaning like \
+    ctx.lineWidth = 14;
+    ctx.beginPath();
+    ctx.moveTo(92, cy + 93);
+    ctx.lineTo(105, cy + 123);
+    ctx.stroke();
+
+    // arm reaching forward-left-down
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.moveTo(92, cy + 100);
+    ctx.lineTo(78, cy + 120);
+    ctx.stroke();
+
+    // front leg: "7" shape
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.moveTo(102, cy + 125);
+    ctx.lineTo(88, cy + 133);
+    ctx.lineTo(88, cy + 147);
+    ctx.stroke();
+
+    // back leg: extends down
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.moveTo(105, cy + 127);
+    ctx.lineTo(105, cy + 163);
+    ctx.stroke();
+
+    PVR.Assets.road_marking = c;
   }
 
 };
