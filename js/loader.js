@@ -3,11 +3,16 @@ window.PVR = window.PVR || {};
 PVR.Loader = {
 
   spriteMap: {
-    'player_straight': 'assets/sprites/player_straight.png',
-    'player_left1':    'assets/sprites/player_left1.png',
-    'player_left2':    'assets/sprites/player_left2.png',
-    'player_right1':   'assets/sprites/player_right1.png',
-    'player_right2':   'assets/sprites/player_right2.png',
+    'player_straight': 'assets/sprites/player/player_straight.png',
+    'player_straight_b': 'assets/sprites/player/player_straight_b.png',
+    'player_left1':    'assets/sprites/player/player_left1.png',
+    'player_left1_b':  'assets/sprites/player/player_left1_b.png',
+    'player_left2':    'assets/sprites/player/player_left2.png',
+    'player_left2_b':  'assets/sprites/player/player_left2_b.png',
+    'player_right1':   'assets/sprites/player/player_right1.png',
+    'player_right1_b': 'assets/sprites/player/player_right1_b.png',
+    'player_right2':   'assets/sprites/player/player_right2.png',
+    'player_right2_b': 'assets/sprites/player/player_right2_b.png',
     'rival_bike':      'assets/sprites/rival_bike.png',
     'rival_scooter':   'assets/sprites/rival_scooter.png',
     'rival_pedestrian':'assets/sprites/rival_pedestrian.png',

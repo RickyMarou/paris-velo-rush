@@ -18,6 +18,7 @@ PVR.Game = {
   elapsed: 0,
   countdown: 0,
   shakeTimer: 0,
+  pedalTimer: 0,
 
   lastTime: null,
 
@@ -83,6 +84,7 @@ PVR.Game = {
     PVR.Game.elapsed = 0;
     PVR.Game.countdown = PVR.RACE.COUNTDOWN_SECS + 1;
     PVR.Game.shakeTimer = 0;
+    PVR.Game.pedalTimer = 0;
 
     PVR.Game.state = 'countdown';
   },
@@ -161,11 +163,12 @@ PVR.Game = {
     if (PVR.Input.isAccelerate()) {
       var kmh = PVR.Game.speed / PVR.SPEED.MAX * PVR.SPEED.MAX_KMH;
       var zones = PVR.SPEED.ACCEL_ZONES;
-      var factor = zones[zones.length - 1].factor;
+      var zone = zones[zones.length - 1];
       for (var z = 0; z < zones.length; z++) {
-        if (kmh < zones[z].upTo) { factor = zones[z].factor; break; }
+        if (kmh < zones[z].upTo) { zone = zones[z]; break; }
       }
-      PVR.Game.speed = PVR.Util.accelerate(PVR.Game.speed, PVR.SPEED.BASE_ACCEL * factor, dt);
+      PVR.Game.speed = PVR.Util.accelerate(PVR.Game.speed, PVR.SPEED.BASE_ACCEL * zone.factor, dt);
+      PVR.Game.pedalTimer += dt * zone.pedalRate;
     } else if (PVR.Input.isBrake()) {
       PVR.Game.speed = PVR.Util.accelerate(PVR.Game.speed, PVR.SPEED.BRAKE, dt);
     } else {
@@ -254,6 +257,11 @@ PVR.Game = {
           segment.p2.screen.x, segment.p2.screen.y, segment.p2.screen.w);
       }
       if (ci === 3) {
+        PVR.Render.roadStamp(PVR.Assets.arrow_pictogram,
+          segment.p1.screen.x, segment.p1.screen.y, segment.p1.screen.w,
+          segment.p2.screen.x, segment.p2.screen.y, segment.p2.screen.w);
+      }
+      if (ci === 7) {
         PVR.Render.roadStamp(PVR.Assets.cyclist_pictogram,
           segment.p1.screen.x, segment.p1.screen.y, segment.p1.screen.w,
           segment.p2.screen.x, segment.p2.screen.y, segment.p2.screen.w);
@@ -279,7 +287,10 @@ PVR.Game = {
 
     var updown = playerY;
     var shake = PVR.Game.shakeTimer > 0 ? 12 : 0;
-    PVR.Render.player(PVR.Game.speed, PVR.SPEED.MAX, PVR.Game.steer, 0, shake);
+    var pedalFrame = (PVR.Game.speed > 0 && Math.floor(PVR.Game.pedalTimer) % 2 === 1) ? '_b' : '';
+    if (!PVR.DEBUG.HIDE_PLAYER) {
+      PVR.Render.player(PVR.Game.speed, PVR.SPEED.MAX, PVR.Game.steer, 0, shake, pedalFrame);
+    }
 
     PVR.Hud.draw(ctx, {
       speed: PVR.Game.speed,

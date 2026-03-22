@@ -80,43 +80,22 @@ PVR.Render = {
     // the chevron spans this segment — perspective is built into the
     // segment coords: y1/w1 = near (bottom, wider), y2/w2 = far (top, narrower)
     var arm1 = w1 * 0.35;
-    var arm2 = w2 * 0.35;
     var thick = segH * 0.35;
 
-    // interpolate x positions at 25%, 50%, 75% of the segment
     var x25 = PVR.Util.interpolate(x1, x2, 0.25);
     var y25 = PVR.Util.interpolate(y1, y2, 0.25);
     var w25 = PVR.Util.interpolate(w1, w2, 0.25) * 0.35;
 
-    var x50 = PVR.Util.interpolate(x1, x2, 0.5);
-    var y50 = PVR.Util.interpolate(y1, y2, 0.5);
-    var w50 = PVR.Util.interpolate(w1, w2, 0.5) * 0.35;
-
-    var x75 = PVR.Util.interpolate(x1, x2, 0.75);
-    var y75 = PVR.Util.interpolate(y1, y2, 0.75);
-    var w75 = PVR.Util.interpolate(w1, w2, 0.75) * 0.35;
-
     ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
 
-    // lower V: tip at 50%, arms at near (y1)
-    ctx.beginPath();
-    ctx.moveTo(x50, y50);
-    ctx.lineTo(x1 - arm1, y1);
-    ctx.lineTo(x25 - w25, y25);
-    ctx.lineTo(x50, y50 + thick);
-    ctx.lineTo(x25 + w25, y25);
-    ctx.lineTo(x1 + arm1, y1);
-    ctx.closePath();
-    ctx.fill();
-
-    // upper V: tip at far (y2), arms at 50%
+    // single V: tip at far (y2), arms at near (y1)
     ctx.beginPath();
     ctx.moveTo(x2, y2);
-    ctx.lineTo(x50 - w50, y50);
-    ctx.lineTo(x75 - w75, y75);
+    ctx.lineTo(x1 - arm1, y1);
+    ctx.lineTo(x25 - w25, y25);
     ctx.lineTo(x2, y2 + thick);
-    ctx.lineTo(x75 + w75, y75);
-    ctx.lineTo(x50 + w50, y50);
+    ctx.lineTo(x25 + w25, y25);
+    ctx.lineTo(x1 + arm1, y1);
     ctx.closePath();
     ctx.fill();
   },
@@ -153,10 +132,11 @@ PVR.Render = {
       destX, destY, destW, destH - clipH);
   },
 
-  player: function(speed, maxSpeed, steer, updown, shake) {
+  player: function(speed, maxSpeed, steer, updown, shake, pedalFrame) {
     var spriteKey = 'player_straight';
-    if (steer < -0.02) spriteKey = steer < -0.5 ? 'player_left2' : 'player_left1';
-    else if (steer > 0.02) spriteKey = steer > 0.5 ? 'player_right2' : 'player_right1';
+    if (steer < -0.02) spriteKey = 'player_left2';
+    else if (steer > 0.02) spriteKey = 'player_right2';
+    if (pedalFrame) spriteKey += pedalFrame;
 
     var img = PVR.Assets[spriteKey];
     if (!img) return;
