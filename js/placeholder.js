@@ -347,38 +347,14 @@ PVR.Placeholder = {
   },
 
   buildCyclistPictogram: function() {
-    // Single canvas: cyclist on top (near player), arrow below (toward horizon)
-    var c = PVR.Placeholder.createCanvas(200, 460);
+    var c = PVR.Placeholder.createCanvas(200, 220);
     var ctx = c.getContext('2d');
 
     ctx.fillStyle = '#FFFFFF';
     ctx.strokeStyle = '#FFFFFF';
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-
-    // ====== ARROW (top half, y 20-180) ======
-
-    ctx.fillStyle = '#FFFFFF';
-    var ax = 100, ay = 20;
-
-    // arrowhead (taller, narrower triangle) + shaft
-    ctx.beginPath();
-    ctx.moveTo(ax, ay);
-    ctx.lineTo(ax - 22, ay + 70);
-    ctx.lineTo(ax - 9, ay + 70);
-    ctx.lineTo(ax - 9, ay + 150);
-    ctx.lineTo(ax + 9, ay + 150);
-    ctx.lineTo(ax + 9, ay + 70);
-    ctx.lineTo(ax + 22, ay + 70);
-    ctx.closePath();
-    ctx.fill();
-
-    // ====== CYCLIST (bottom half, y 240-400) ======
-
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    var cy = 200;
+    var cy = 0;
 
     // wheels: two solid discs
     ctx.beginPath();
