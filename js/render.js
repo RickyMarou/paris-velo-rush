@@ -42,14 +42,37 @@ PVR.Render = {
 
   segment: function(x1, y1, w1, x2, y2, w2, fog, color) {
     var ctx = PVR.Render.ctx;
+    var L = PVR.LANE;
 
-    var gx1 = 0, gy1 = y2, gx2 = PVR.WIDTH, gy2 = y1;
+    // concrete background
     ctx.fillStyle = color.concrete;
-    ctx.fillRect(gx1, gy1, gx2, gy2 - gy1);
+    ctx.fillRect(0, y2, PVR.WIDTH, y1 - y2);
 
-    PVR.Render.polygon(ctx, x1 - w1 * 1.2, y1, x1 - w1, y1, x2 - w2, y2, x2 - w2 * 1.2, y2, color.rumble);
-    PVR.Render.polygon(ctx, x1 + w1, y1, x1 + w1 * 1.2, y1, x2 + w2 * 1.2, y2, x2 + w2, y2, color.rumble);
-    PVR.Render.polygon(ctx, x1 - w1, y1, x1 + w1, y1, x2 + w2, y2, x2 - w2, y2, color.road);
+    // left rumble strip
+    var lrOut = L.LEFT_EDGE - L.RUMBLE_WIDTH;
+    var lrIn = L.LEFT_EDGE;
+    PVR.Render.polygon(ctx,
+      x1 + w1 * lrOut, y1, x1 + w1 * lrIn, y1,
+      x2 + w2 * lrIn, y2, x2 + w2 * lrOut, y2, color.rumble);
+
+    // right rumble strip
+    var rrIn = L.RIGHT_EDGE;
+    var rrOut = L.RIGHT_EDGE + L.RUMBLE_WIDTH;
+    PVR.Render.polygon(ctx,
+      x1 + w1 * rrIn, y1, x1 + w1 * rrOut, y1,
+      x2 + w2 * rrOut, y2, x2 + w2 * rrIn, y2, color.rumble);
+
+    // road surface
+    PVR.Render.polygon(ctx,
+      x1 + w1 * L.LEFT_EDGE, y1, x1 + w1 * L.RIGHT_EDGE, y1,
+      x2 + w2 * L.RIGHT_EDGE, y2, x2 + w2 * L.LEFT_EDGE, y2, color.road);
+
+    // lane divider (dashed via alternating LIGHT/DARK lane color)
+    var dW = 0.04;
+    var d = L.DIVIDER;
+    PVR.Render.polygon(ctx,
+      x1 + w1 * (d - dW), y1, x1 + w1 * (d + dW), y1,
+      x2 + w2 * (d + dW), y2, x2 + w2 * (d - dW), y2, color.lane);
 
     if (fog < 1) {
       ctx.fillStyle = 'rgba(0, 81, 8, ' + (1 - fog) + ')';
@@ -71,11 +94,14 @@ PVR.Render = {
     var x1 = seg.p1.screen.x, y1 = seg.p1.screen.y, w1 = seg.p1.screen.w;
     var x2 = seg.p2.screen.x, y2 = seg.p2.screen.y, w2 = seg.p2.screen.w;
     var ctx = PVR.Render.ctx;
-    var cx = (x1 + x2) / 2;
     var segH = y1 - y2;
     if (segH < 1) return;
-    // width = fraction of road, height = segment height (perspective-squashed)
-    var dw = (w1 + w2) * 0.5;
+
+    var cc = PVR.LANE.CYCLE_CENTER;
+    var cx = ((x1 + w1 * cc) + (x2 + w2 * cc)) / 2;
+
+    var cycleWidth = PVR.LANE.DIVIDER - PVR.LANE.LEFT_EDGE;
+    var dw = (w1 + w2) * 0.5 * cycleWidth * 0.7;
     var dh = segH * 4;
     var cy = y1 - dh / 2;
     ctx.globalAlpha = 0.9;

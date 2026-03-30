@@ -43,16 +43,25 @@ PVR.SPEED.DECEL = -PVR.SPEED.MAX / 5;
 PVR.SPEED.OFF_ROAD = PVR.SPEED.MAX / 4;
 PVR.SPEED.BASE_ACCEL = PVR.SPEED.MAX / 5;
 
+PVR.LANE = {
+  LEFT_EDGE:    -1.3,
+  DIVIDER:      -0.6,
+  RIGHT_EDGE:   +1.0,
+  CYCLE_CENTER: -0.95,
+  CAR_CENTER:   +0.2,
+  RUMBLE_WIDTH:  0.2
+};
+
 PVR.COLORS = {
   SKY: '#72D7EE',
   TREE: '#005108',
   FOG: '#005108',
 
-  LIGHT: { road: '#6B6B6B', concrete: '#B0B0B0', rumble: '#FFFFFF' },
-  DARK:  { road: '#696969', concrete: '#989898', rumble: '#FFFFFF' },
+  LIGHT: { road: '#6B6B6B', concrete: '#B0B0B0', rumble: '#FFFFFF', lane: '#6B6B6B' },
+  DARK:  { road: '#696969', concrete: '#989898', rumble: '#FFFFFF', lane: '#FFFFFF' },
 
-  START: { road: '#FFFFFF', concrete: '#B0B0B0', rumble: '#FFFFFF' },
-  FINISH: { road: '#000000', concrete: '#989898', rumble: '#000000' },
+  START: { road: '#FFFFFF', concrete: '#B0B0B0', rumble: '#FFFFFF', lane: '#FFFFFF' },
+  FINISH: { road: '#000000', concrete: '#989898', rumble: '#000000', lane: '#000000' },
 
   HUD_TEXT: '#FFFFFF',
   HUD_BG: 'rgba(0, 0, 0, 0.6)'

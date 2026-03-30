@@ -103,6 +103,7 @@ PVR.Road = {
     var buildings = ['building_1', 'building_2', 'building_3', 'building_4'];
     var cafes = ['building_1', 'building_3'];
     var baseOffset = 2.0;
+    var leftExtra = Math.abs(PVR.LANE.LEFT_EDGE) - 1.0;
     var jitter = 0.8;
     var tableSpacing = 3;
 
@@ -110,7 +111,7 @@ PVR.Road = {
       var rightBuilding = PVR.Util.randomChoice(buildings);
       var leftBuilding = PVR.Util.randomChoice(buildings);
       var rightOffset = baseOffset + Math.random() * jitter;
-      var leftOffset = baseOffset + Math.random() * jitter;
+      var leftOffset = baseOffset + leftExtra + Math.random() * jitter;
 
       PVR.Road.addSprite(n, rightBuilding, rightOffset);
       PVR.Road.addSprite(n, leftBuilding, -leftOffset);

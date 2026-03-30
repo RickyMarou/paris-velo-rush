@@ -80,7 +80,7 @@ PVR.Game = {
   startRace: function() {
     PVR.Game.position = 0;
     PVR.Game.speed = 0;
-    PVR.Game.playerX = 0;
+    PVR.Game.playerX = PVR.LANE.CYCLE_CENTER;
     PVR.Game.steer = 0;
     PVR.Game.elapsed = 0;
     PVR.Game.countdown = PVR.RACE.COUNTDOWN_SECS + 1;
@@ -184,14 +184,7 @@ PVR.Game = {
       }
     }
 
-    // off-road
-    if (Math.abs(PVR.Game.playerX) > 1.0) {
-      if (PVR.Game.speed > PVR.SPEED.OFF_ROAD) {
-        PVR.Game.speed = PVR.Util.accelerate(PVR.Game.speed, PVR.SPEED.DECEL * 3, dt);
-      }
-    }
-
-    PVR.Game.playerX = PVR.Util.limit(PVR.Game.playerX, -2.5, 2.5);
+    PVR.Game.playerX = PVR.Util.limit(PVR.Game.playerX, PVR.LANE.LEFT_EDGE - 1.5, PVR.LANE.RIGHT_EDGE + 1.0);
     PVR.Game.speed = PVR.Util.limit(PVR.Game.speed, 0, PVR.SPEED.MAX);
 
     // advance position
