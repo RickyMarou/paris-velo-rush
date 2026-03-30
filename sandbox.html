@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Roadside Sprite Sandbox</title>
+  <style>
+    * { margin: 0; padding: 0; }
+    body { background: #000; display: flex; align-items: center; justify-content: center; height: 100vh; }
+    canvas { max-width: 100vw; max-height: 100vh; }
+  </style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <script src="js/constants.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/road.js"></script>
+  <script src="js/placeholder.js"></script>
+  <script src="js/loader.js"></script>
+  <script src="js/render.js"></script>
+
+  <script>
+  window.addEventListener('DOMContentLoaded', function() {
+    var canvas = document.getElementById('game');
+    canvas.width = PVR.WIDTH;
+    canvas.height = PVR.HEIGHT;
+    var ctx = canvas.getContext('2d');
+
+    PVR.Render.init(ctx);
+
+    PVR.Loader.load(function() {
+      var segments = [];
+      for (var n = 0; n < 60; n++) {
+        segments.push({
+          index: n,
+          p1: { world: { y: 0, z: n * PVR.ROAD.SEGMENT_LENGTH }, camera: {}, screen: {} },
+          p2: { world: { y: 0, z: (n + 1) * PVR.ROAD.SEGMENT_LENGTH }, camera: {}, screen: {} },
+          curve: 0,
+          sprites: [],
+          color: Math.floor(n / PVR.ROAD.RUMBLE_LENGTH) % 2 ? PVR.COLORS.DARK : PVR.COLORS.LIGHT
+        });
+      }
+
+      for (var i = 5; i < segments.length; i += 10) {
+        segments[i].sprites.push({ source: 'building_1', offset: 2.0 });
+      }
+
+      var cameraZ = -2 * PVR.ROAD.SEGMENT_LENGTH;
+      var cameraY = PVR.ROAD.CAMERA_HEIGHT;
+      var cameraX = 0;
+
+      ctx.fillStyle = PVR.COLORS.LIGHT.concrete;
+      ctx.fillRect(0, 0, PVR.WIDTH, PVR.HEIGHT);
+
+      ctx.fillStyle = '#B0D4E8';
+      ctx.fillRect(0, 0, PVR.WIDTH, PVR.HEIGHT / 2);
+
+      var maxy = PVR.HEIGHT;
+      for (var j = 0; j < segments.length; j++) {
+        var seg = segments[j];
+
+        PVR.Util.project(seg.p1, cameraX, cameraY, cameraZ, PVR.ROAD.CAMERA_DEPTH, PVR.WIDTH, PVR.HEIGHT, PVR.ROAD.WIDTH);
+        PVR.Util.project(seg.p2, cameraX, cameraY, cameraZ, PVR.ROAD.CAMERA_DEPTH, PVR.WIDTH, PVR.HEIGHT, PVR.ROAD.WIDTH);
+
+        if (seg.p1.camera.z <= PVR.ROAD.CAMERA_DEPTH) continue;
+        if (seg.p2.screen.y >= seg.p1.screen.y) continue;
+        if (seg.p2.screen.y >= maxy) continue;
+
+        PVR.Render.segment(
+          seg.p1.screen.x, seg.p1.screen.y, seg.p1.screen.w,
+          seg.p2.screen.x, seg.p2.screen.y, seg.p2.screen.w,
+          1, seg.color);
+
+        maxy = seg.p2.screen.y;
+      }
+
+      var backToFront = segments.slice().reverse();
+      PVR.Render.drawRoadsideSprites(backToFront);
+    });
+  });
+  </script>
+</body>
+</html>

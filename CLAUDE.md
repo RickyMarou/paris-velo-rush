@@ -43,7 +43,7 @@ The game is NOT a race against other riders. It's a time-trial: reach the finish
 ### Road Features
 - Straight segments, curves (left/right), hills (up/down)
 - Alternating road color segments for speed illusion
-- Cycle lane chevrons and cyclist pictograms painted on road surface
+- Road stamps (directional arrow + cyclist pictogram on a single canvas) painted on road surface
 - Narrow road with white edges and concrete shoulders (no lane markings)
 
 ### Assets
@@ -122,11 +122,12 @@ docs/art-brief.md       ← full asset specs for the artist
 3. Loop through `DRAW_DISTANCE` (300) segments ahead of player:
    - Project segment endpoints to screen
    - Draw road polygon (trapezoid) with concrete shoulders and white edge rumbles
-   - Draw chevrons and cyclist pictograms on road surface
+   - Draw road stamps (arrow + cyclist pictogram) on road surface
    - Apply exponential fog by distance
-4. Reverse-iterate segments to draw roadside sprites back-to-front (painter's algorithm)
-5. Draw player bike (center-bottom, sprite selected by steer direction + pedal frame)
-6. Draw HUD (speed bar, km/h, timer, countdown if active)
+4. Draw road stamps back-to-front via `drawRoadStamps()` (every `ROAD_STAMP_INTERVAL` segments)
+5. Reverse-iterate segments to draw roadside sprites back-to-front (painter's algorithm)
+6. Draw player bike (center-bottom, sprite selected by steer direction + pedal frame)
+7. Draw HUD (speed bar, km/h, timer, countdown if active)
 
 ### Physics (`game.js: updateRacing`)
 

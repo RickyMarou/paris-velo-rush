@@ -94,25 +94,30 @@ PVR.Render = {
     ctx.fill();
   },
 
-  sprite: function(roadX, roadY, roadW, spriteKey, offset, clipY, scale) {
+  drawRoadsideSprites: function(segments) {
+    for (var n = 0; n < segments.length; n++) {
+      var seg = segments[n];
+      if (PVR.DEBUG.HIDE_SPRITES) continue;
+      for (var s = 0; s < seg.sprites.length; s++) {
+        var sp = seg.sprites[s];
+        PVR.Render.sprite(seg.p1.screen.x, seg.p1.screen.y, seg.p1.screen.w, sp.source, sp.offset);
+      }
+    }
+  },
+
+  sprite: function(roadX, roadY, roadW, spriteKey, offset) {
     var img = PVR.Assets[spriteKey];
     if (!img) return;
 
     var spriteW = img.width;
     var spriteH = img.height;
-    var spriteScale = scale * PVR.ROAD.WIDTH;
-    var destW = spriteW * spriteScale;
-    var destH = spriteH * spriteScale;
+    var pixelsPerUnit = roadW / (PVR.ROAD.WIDTH / 2);
+    var destW = spriteW * pixelsPerUnit;
+    var destH = spriteH * pixelsPerUnit;
     var destX = roadX + (roadW * offset) - destW / 2;
     var destY = roadY - destH;
 
-    var clipH = clipY ? Math.max(0, destY + destH - clipY) : 0;
-    if (clipH >= destH) return;
-
-    var ctx = PVR.Render.ctx;
-    ctx.drawImage(img,
-      0, 0, spriteW, spriteH - (spriteH * clipH / destH),
-      destX, destY, destW, destH - clipH);
+    PVR.Render.ctx.drawImage(img, 0, 0, spriteW, spriteH, destX, destY, destW, destH);
   },
 
   player: function(speed, maxSpeed, steer, updown, shake, pedalFrame) {

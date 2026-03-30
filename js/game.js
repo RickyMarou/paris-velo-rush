@@ -253,7 +253,7 @@ PVR.Game = {
       maxy = segment.p2.screen.y;
     }
 
-    // render road stamps and sprites back-to-front (after all segments, so they don't get clipped)
+    // render road stamps and sprites back-to-front
     var visibleSegments = [];
     for (n = PVR.ROAD.DRAW_DISTANCE - 1; n > 0; n--) {
       var segIdx2 = (baseSegment.index + n) % segCount;
@@ -261,18 +261,7 @@ PVR.Game = {
     }
     PVR.Render.drawRoadStamps(visibleSegments);
 
-    for (n = 0; n < visibleSegments.length; n++) {
-      var seg = visibleSegments[n];
-
-      if (!PVR.DEBUG.HIDE_SPRITES) {
-        for (var s = 0; s < seg.sprites.length; s++) {
-          var sp = seg.sprites[s];
-          var spriteScale = seg.p1.screen.scale;
-          PVR.Render.sprite(seg.p1.screen.x, seg.p1.screen.y, seg.p1.screen.w, sp.source, sp.offset, maxy, spriteScale);
-        }
-      }
-
-    }
+    PVR.Render.drawRoadsideSprites(visibleSegments);
 
     var updown = playerY;
     var shake = PVR.Game.shakeTimer > 0 ? 12 : 0;
