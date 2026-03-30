@@ -41,8 +41,14 @@
         });
       }
 
-      for (var i = 5; i < segments.length; i += 10) {
-        segments[i].sprites.push({ source: 'building_1', offset: 2.0 });
+      var buildings = ['building_1', 'building_2', 'building_3', 'building_4'];
+      var baseOffset = 2.0;
+      var jitter = 0.8;
+      for (var i = 5; i < segments.length; i += 20) {
+        var rightOff = baseOffset + Math.random() * jitter;
+        var leftOff = baseOffset + Math.random() * jitter;
+        segments[i].sprites.push({ source: PVR.Util.randomChoice(buildings), offset: rightOff });
+        segments[i].sprites.push({ source: PVR.Util.randomChoice(buildings), offset: -leftOff });
       }
 
       var cameraZ = -2 * PVR.ROAD.SEGMENT_LENGTH;

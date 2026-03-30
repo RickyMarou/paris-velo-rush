@@ -100,9 +100,15 @@ PVR.Road = {
 
   addRoadsideSprites: function() {
     var segs = PVR.Road.segments;
+    var buildings = ['building_1', 'building_2', 'building_3', 'building_4'];
+    var baseOffset = 2.0;
+    var jitter = 0.8;
 
-    for (var n = 10; n < segs.length; n += 10) {
-      PVR.Road.addSprite(n, 'building_1', 2.0);
+    for (var n = 10; n < segs.length; n += 20) {
+      var rightOffset = baseOffset + Math.random() * jitter;
+      var leftOffset = baseOffset + Math.random() * jitter;
+      PVR.Road.addSprite(n, PVR.Util.randomChoice(buildings), rightOffset);
+      PVR.Road.addSprite(n, PVR.Util.randomChoice(buildings), -leftOffset);
     }
   }
 
