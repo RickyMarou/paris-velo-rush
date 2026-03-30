@@ -42,15 +42,22 @@ PVR.Loader = {
 
     var keys = Object.keys(PVR.Loader.spriteMap);
     var remaining = keys.length;
+    var called = false;
+
+    var finish = function() {
+      if (called) return;
+      called = true;
+      callback();
+    };
 
     if (remaining === 0) {
-      callback();
+      finish();
       return;
     }
 
     var done = function() {
       remaining--;
-      if (remaining <= 0) callback();
+      if (remaining <= 0) finish();
     };
 
     for (var i = 0; i < keys.length; i++) {
@@ -65,7 +72,7 @@ PVR.Loader = {
       })(keys[i]);
     }
 
-    setTimeout(callback, 2000);
+    setTimeout(finish, 2000);
   }
 
 };

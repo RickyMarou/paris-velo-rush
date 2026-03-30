@@ -33,6 +33,7 @@ PVR.Game = {
 
     PVR.Loader.load(function() {
       PVR.Road.buildTrack();
+      PVR.Game.startRace();
       PVR.Game.lastTime = PVR.Util.timestamp();
       requestAnimationFrame(PVR.Game.frame);
     });
