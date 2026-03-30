@@ -101,14 +101,39 @@ PVR.Road = {
   addRoadsideSprites: function() {
     var segs = PVR.Road.segments;
     var buildings = ['building_1', 'building_2', 'building_3', 'building_4'];
+    var cafes = ['building_1', 'building_3'];
     var baseOffset = 2.0;
     var jitter = 0.8;
+    var tableSpacing = 3;
 
     for (var n = 10; n < segs.length; n += 20) {
+      var rightBuilding = PVR.Util.randomChoice(buildings);
+      var leftBuilding = PVR.Util.randomChoice(buildings);
       var rightOffset = baseOffset + Math.random() * jitter;
       var leftOffset = baseOffset + Math.random() * jitter;
-      PVR.Road.addSprite(n, PVR.Util.randomChoice(buildings), rightOffset);
-      PVR.Road.addSprite(n, PVR.Util.randomChoice(buildings), -leftOffset);
+
+      PVR.Road.addSprite(n, rightBuilding, rightOffset);
+      PVR.Road.addSprite(n, leftBuilding, -leftOffset);
+
+      if (cafes.indexOf(rightBuilding) >= 0) {
+        var rightTables = 1 + Math.floor(Math.random() * 3);
+        for (var t = 0; t < rightTables; t++) {
+          var tableSeg = n + (t + 1) * tableSpacing;
+          if (tableSeg < segs.length) {
+            PVR.Road.addSprite(tableSeg, 'cafe', rightOffset);
+          }
+        }
+      }
+
+      if (cafes.indexOf(leftBuilding) >= 0) {
+        var leftTables = 1 + Math.floor(Math.random() * 3);
+        for (var u = 0; u < leftTables; u++) {
+          var tableSeg = n + (u + 1) * tableSpacing;
+          if (tableSeg < segs.length) {
+            PVR.Road.addSprite(tableSeg, 'cafe', -leftOffset);
+          }
+        }
+      }
     }
   }
 

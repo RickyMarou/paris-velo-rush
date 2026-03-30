@@ -94,6 +94,38 @@ PVR.Render = {
     ctx.fill();
   },
 
+  staticScene: function(segments, cameraX, cameraY, cameraZ) {
+    var ctx = PVR.Render.ctx;
+
+    ctx.fillStyle = PVR.COLORS.LIGHT.concrete;
+    ctx.fillRect(0, 0, PVR.WIDTH, PVR.HEIGHT);
+
+    ctx.fillStyle = '#B0D4E8';
+    ctx.fillRect(0, 0, PVR.WIDTH, PVR.HEIGHT / 2);
+
+    var maxy = PVR.HEIGHT;
+    for (var i = 0; i < segments.length; i++) {
+      var seg = segments[i];
+
+      PVR.Util.project(seg.p1, cameraX, cameraY, cameraZ, PVR.ROAD.CAMERA_DEPTH, PVR.WIDTH, PVR.HEIGHT, PVR.ROAD.WIDTH);
+      PVR.Util.project(seg.p2, cameraX, cameraY, cameraZ, PVR.ROAD.CAMERA_DEPTH, PVR.WIDTH, PVR.HEIGHT, PVR.ROAD.WIDTH);
+
+      if (seg.p1.camera.z <= PVR.ROAD.CAMERA_DEPTH) continue;
+      if (seg.p2.screen.y >= seg.p1.screen.y) continue;
+      if (seg.p2.screen.y >= maxy) continue;
+
+      PVR.Render.segment(
+        seg.p1.screen.x, seg.p1.screen.y, seg.p1.screen.w,
+        seg.p2.screen.x, seg.p2.screen.y, seg.p2.screen.w,
+        1, seg.color);
+
+      maxy = seg.p2.screen.y;
+    }
+
+    var backToFront = segments.slice().reverse();
+    PVR.Render.drawRoadsideSprites(backToFront);
+  },
+
   drawRoadsideSprites: function(segments) {
     for (var n = 0; n < segments.length; n++) {
       var seg = segments[n];
