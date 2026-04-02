@@ -88,6 +88,9 @@ PVR.Game = {
     PVR.Game.pedalTimer = 0;
 
     PVR.Game.state = 'countdown';
+
+    PVR.NPC.reset();
+    PVR.NPC.spawnRival(PVR.ROAD.SEGMENT_LENGTH * 30);
   },
 
   renderTitle: function() {
@@ -176,19 +179,31 @@ PVR.Game = {
       PVR.Game.speed = PVR.Util.accelerate(PVR.Game.speed, PVR.SPEED.DECEL, dt);
     }
 
-    // turning speed cap
-    if (PVR.Game.steer !== 0) {
-      var turnMax = PVR.SPEED.MAX * PVR.SPEED.TURN_MAX_KMH / PVR.SPEED.MAX_KMH;
-      if (PVR.Game.speed > turnMax) {
-        PVR.Game.speed = PVR.Util.accelerate(PVR.Game.speed, PVR.SPEED.DECEL * 2, dt);
-      }
-    }
+    // turning speed cap (disabled for testing)
+    // if (PVR.Game.steer !== 0) {
+    //   var turnMax = PVR.SPEED.MAX * PVR.SPEED.TURN_MAX_KMH / PVR.SPEED.MAX_KMH;
+    //   if (PVR.Game.speed > turnMax) {
+    //     PVR.Game.speed = PVR.Util.accelerate(PVR.Game.speed, PVR.SPEED.DECEL * 2, dt);
+    //   }
+    // }
 
     PVR.Game.playerX = PVR.Util.limit(PVR.Game.playerX, PVR.LANE.LEFT_EDGE - 1.5, PVR.LANE.RIGHT_EDGE + 1.0);
     PVR.Game.speed = PVR.Util.limit(PVR.Game.speed, 0, PVR.SPEED.MAX);
 
     // advance position
     PVR.Game.position = PVR.Util.increase(PVR.Game.position, dt * PVR.Game.speed, PVR.Road.trackLength);
+
+    // update NPCs
+    PVR.NPC.update(dt, PVR.Road.trackLength);
+
+    var hitNpc = PVR.NPC.checkCollision(
+      PVR.Game.position + PVR.ROAD.PLAYER_Z,
+      PVR.Game.playerX,
+      PVR.Road.trackLength
+    );
+    if (hitNpc && PVR.Game.speed > hitNpc.speed) {
+      PVR.Game.speed = hitNpc.speed;
+    }
 
     // background scroll
     var curveScroll = playerSegment.curve * speedPercent * dt;

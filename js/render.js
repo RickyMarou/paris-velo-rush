@@ -156,11 +156,36 @@ PVR.Render = {
     for (var n = 0; n < segments.length; n++) {
       var seg = segments[n];
       if (PVR.DEBUG.HIDE_SPRITES) continue;
+
       for (var s = 0; s < seg.sprites.length; s++) {
         var sp = seg.sprites[s];
         PVR.Render.sprite(seg.p1.screen.x, seg.p1.screen.y, seg.p1.screen.w, sp.source, sp.offset);
       }
+
+      var npc = PVR.NPC.findOnSegment(seg.index);
+      if (npc) {
+        PVR.Render.npcSprite(seg, npc);
+      }
     }
+  },
+
+  npcSprite: function(seg, npc) {
+    var img = PVR.Assets[npc.sprite];
+    if (!img) return;
+
+    var npcPercent = (npc.z % PVR.ROAD.SEGMENT_LENGTH) / PVR.ROAD.SEGMENT_LENGTH;
+    var scale = PVR.Util.interpolate(seg.p1.screen.scale, seg.p2.screen.scale, npcPercent);
+    var roadX = PVR.Util.interpolate(seg.p1.screen.x, seg.p2.screen.x, npcPercent);
+    var roadY = PVR.Util.interpolate(seg.p1.screen.y, seg.p2.screen.y, npcPercent);
+    var roadW = PVR.Util.interpolate(seg.p1.screen.w, seg.p2.screen.w, npcPercent);
+
+    var spriteScale = scale * PVR.ROAD.WIDTH * 1.4;
+    var destW = img.width * spriteScale;
+    var destH = img.height * spriteScale;
+    var destX = roadX + (roadW * npc.offset) - destW / 2;
+    var destY = roadY - destH;
+
+    PVR.Render.ctx.drawImage(img, 0, 0, img.width, img.height, destX, destY, destW, destH);
   },
 
   sprite: function(roadX, roadY, roadW, spriteKey, offset) {

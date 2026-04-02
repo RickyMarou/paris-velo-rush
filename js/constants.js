@@ -29,7 +29,7 @@ PVR.SPEED = {
   // 4 acceleration zones: [threshold in km/h, accel factor]
   // accel factor is multiplied by MAX/5 (the base accel rate)
   ACCEL_ZONES: [
-    { upTo: 5,  factor: 0.4, pedalRate: 1.5 },  // 0-5 km/h: slow crank from standstill
+    { upTo: 5,  factor: 1.0, pedalRate: 1.5 },  // 0-5 km/h: quick start
     { upTo: 25, factor: 1.0, pedalRate: 4.0 },   // 5-25 km/h: brisk cruising cadence
     { upTo: 30, factor: 0.4, pedalRate: 5.0 },   // 25-30 km/h: fast spinning
     { upTo: 35, factor: 0.15, pedalRate: 6.0 }   // 30-35 km/h: legs going wild
@@ -91,6 +91,14 @@ PVR.BG = {
 };
 
 PVR.ROAD_STAMP_INTERVAL = 30;
+
+PVR.NPC_CONFIG = {
+  SPEED_FACTOR: 0.6,
+  HITBOX_WIDTH: 0.4,
+  PLAYER_WIDTH: 0.4,
+  OVERLAP_PERCENT: 0.8,
+  Z_PROXIMITY: 400
+};
 
 PVR.DEBUG = {
   HIDE_SPRITES: false,
