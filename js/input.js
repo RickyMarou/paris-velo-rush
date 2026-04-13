@@ -36,6 +36,7 @@ PVR.Input = {
       case 38: PVR.Input.keys.up    = true; break;
       case 40: PVR.Input.keys.down  = true; break;
       case 13: PVR.Input.keys.enter = true; break;
+      case 68: PVR.DEBUG.COLLISIONS = !PVR.DEBUG.COLLISIONS; break;
     }
   },
 

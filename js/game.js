@@ -19,8 +19,10 @@ PVR.Game = {
   countdown: 0,
   shakeTimer: 0,
   pedalTimer: 0,
+  debugCollision: null,
 
   lastTime: null,
+  gdt: 0,
 
   init: function() {
     PVR.Game.canvas = document.getElementById('game');
@@ -35,6 +37,7 @@ PVR.Game = {
       PVR.Road.buildTrack();
       PVR.Game.startRace();
       PVR.Game.lastTime = PVR.Util.timestamp();
+      PVR.Game.gdt = 0;
       requestAnimationFrame(PVR.Game.frame);
     });
   },
@@ -43,22 +46,38 @@ PVR.Game = {
     var now = PVR.Util.timestamp();
     var dt = Math.min(1, (now - PVR.Game.lastTime) / 1000);
     PVR.Game.lastTime = now;
+    PVR.Game.gdt += dt;
+
+    while (PVR.Game.gdt > PVR.STEP) {
+      PVR.Game.gdt -= PVR.STEP;
+
+      switch (PVR.Game.state) {
+        case 'title':
+          PVR.Game.updateTitle(PVR.STEP);
+          break;
+        case 'countdown':
+          PVR.Game.updateCountdown(PVR.STEP);
+          break;
+        case 'racing':
+          PVR.Game.updateRacing(PVR.STEP);
+          break;
+        case 'results':
+          PVR.Game.updateResults(PVR.STEP);
+          break;
+      }
+    }
 
     switch (PVR.Game.state) {
       case 'title':
-        PVR.Game.updateTitle(dt);
         PVR.Game.renderTitle();
         break;
       case 'countdown':
-        PVR.Game.updateCountdown(dt);
-        PVR.Game.renderRacing(dt);
+        PVR.Game.renderRacing(PVR.STEP);
         break;
       case 'racing':
-        PVR.Game.updateRacing(dt);
-        PVR.Game.renderRacing(dt);
+        PVR.Game.renderRacing(PVR.STEP);
         break;
       case 'results':
-        PVR.Game.updateResults(dt);
         PVR.Game.renderResults();
         break;
     }
@@ -86,6 +105,7 @@ PVR.Game = {
     PVR.Game.countdown = PVR.RACE.COUNTDOWN_SECS + 1;
     PVR.Game.shakeTimer = 0;
     PVR.Game.pedalTimer = 0;
+    PVR.Game.debugCollision = null;
 
     PVR.Game.state = 'countdown';
 
@@ -144,15 +164,21 @@ PVR.Game = {
   // --- RACING ---
 
   updateRacing: function(dt) {
+    var startPosition = PVR.Game.position;
     var playerSegment = PVR.Road.findSegment(PVR.Game.position + PVR.ROAD.PLAYER_Z);
     var speedPercent = PVR.Game.speed / PVR.SPEED.MAX;
     var dx = dt * 2 * speedPercent;
+    var collisionNpc = null;
 
     PVR.Game.elapsed += dt;
 
     if (PVR.Game.shakeTimer > 0) {
       PVR.Game.shakeTimer -= dt;
     }
+
+    PVR.NPC.update(dt, PVR.Road.trackLength);
+
+    PVR.Game.position = PVR.Util.increase(PVR.Game.position, dt * PVR.Game.speed, PVR.Road.trackLength);
 
     // steering
     PVR.Game.steer = 0;
@@ -187,23 +213,47 @@ PVR.Game = {
     //   }
     // }
 
+    var playerZ = PVR.Game.position + PVR.ROAD.PLAYER_Z;
+    var collisionPlayerSegment = PVR.Road.findSegment(playerZ);
+    var collisionPlayerPercent = PVR.Util.percentRemaining(playerZ, PVR.ROAD.SEGMENT_LENGTH);
+    var collisionPlayerY = PVR.Util.interpolate(collisionPlayerSegment.p1.world.y, collisionPlayerSegment.p2.world.y, collisionPlayerPercent);
+    var playerMetrics = PVR.Render.playerMetrics();
+    var screenOverlap = false;
+    for (var n = 0; n < PVR.NPC.list.length; n++) {
+      var npc = PVR.NPC.list[n];
+      if (PVR.Game.speed <= npc.speed) continue;
+      var gapToNpc = PVR.NPC.signedDistance(playerZ, npc.z, PVR.Road.trackLength);
+      if (Math.abs(gapToNpc) > PVR.NPC_CONFIG.Z_PROXIMITY) continue;
+      var npcMetrics = PVR.Render.npcMetrics(npc, PVR.Game.playerX, PVR.Game.position, collisionPlayerY);
+      if (!npcMetrics || !playerMetrics) continue;
+      screenOverlap = PVR.Render.rectOverlap(playerMetrics.hitbox, npcMetrics.hitbox);
+      if (!screenOverlap) continue;
+
+      PVR.Game.speed = npc.speed;
+      PVR.Game.position = PVR.Util.increase(npc.z, -PVR.ROAD.PLAYER_Z, PVR.Road.trackLength);
+      collisionNpc = npc;
+      break;
+    }
+
     PVR.Game.playerX = PVR.Util.limit(PVR.Game.playerX, PVR.LANE.LEFT_EDGE - 1.5, PVR.LANE.RIGHT_EDGE + 1.0);
     PVR.Game.speed = PVR.Util.limit(PVR.Game.speed, 0, PVR.SPEED.MAX);
 
-    // advance position
-    PVR.Game.position = PVR.Util.increase(PVR.Game.position, dt * PVR.Game.speed, PVR.Road.trackLength);
-
-    // update NPCs
-    PVR.NPC.update(dt, PVR.Road.trackLength);
-
-    var hitNpc = PVR.NPC.checkCollision(
-      PVR.Game.position + PVR.ROAD.PLAYER_Z,
-      PVR.Game.playerX,
-      PVR.Road.trackLength
-    );
-    if (hitNpc && PVR.Game.speed > hitNpc.speed) {
-      PVR.Game.speed = hitNpc.speed;
+    var closestGap = Infinity;
+    for (var i = 0; i < PVR.NPC.list.length; i++) {
+      var gap = PVR.NPC.signedDistance(PVR.Game.position + PVR.ROAD.PLAYER_Z, PVR.NPC.list[i].z, PVR.Road.trackLength);
+      if (Math.abs(gap) < Math.abs(closestGap)) {
+        closestGap = gap;
+      }
     }
+    if (closestGap === Infinity) closestGap = 0;
+
+    PVR.Game.debugCollision = {
+      hitNpc: collisionNpc || null,
+      playerX: PVR.Game.playerX,
+      playerZ: PVR.Game.position + PVR.ROAD.PLAYER_Z,
+      closestGap: closestGap,
+      screenOverlap: screenOverlap
+    };
 
     // background scroll
     var curveScroll = playerSegment.curve * speedPercent * dt;
@@ -213,6 +263,7 @@ PVR.Game = {
 
   renderRacing: function(dt) {
     var ctx = PVR.Game.ctx;
+    PVR.Render.beginFrame();
     PVR.Render.clear();
 
     var baseSegment = PVR.Road.findSegment(PVR.Game.position);
@@ -278,6 +329,8 @@ PVR.Game = {
     if (!PVR.DEBUG.HIDE_PLAYER) {
       PVR.Render.player(PVR.Game.speed, PVR.SPEED.MAX, PVR.Game.steer, 0, shake, pedalFrame);
     }
+
+    PVR.Render.collisionDebug(PVR.Game.debugCollision);
 
     PVR.Hud.draw(ctx, {
       speed: PVR.Game.speed,

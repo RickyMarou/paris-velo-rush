@@ -2,15 +2,82 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Roadside Sprite Sandbox</title>
+  <title>Paris Velo Collision Sandbox</title>
   <style>
-    * { margin: 0; padding: 0; }
-    body { background: #000; display: flex; align-items: center; justify-content: center; height: 100vh; }
-    canvas { max-width: 100vw; max-height: 100vh; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #101314;
+      color: #f3f1e8;
+      display: grid;
+      font-family: monospace;
+      gap: 16px;
+      grid-template-columns: minmax(0, 1600px) 340px;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    canvas {
+      background: #000;
+      border: 1px solid #2e3538;
+      height: auto;
+      max-width: 100%;
+      width: 100%;
+    }
+    .panel {
+      background: #171c1e;
+      border: 1px solid #2e3538;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+    }
+    button {
+      background: #e6dbc3;
+      border: 0;
+      color: #111;
+      cursor: pointer;
+      font: inherit;
+      padding: 8px 10px;
+    }
+    button.active {
+      background: #ff9b54;
+    }
+    .note {
+      color: #c0b9a5;
+      line-height: 1.45;
+    }
+    .debug {
+      background: #111517;
+      border: 1px solid #2e3538;
+      min-height: 240px;
+      padding: 12px;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
   <canvas id="game"></canvas>
+
+  <aside class="panel">
+    <div class="row">
+      <button id="toggle">Pause</button>
+      <button id="step">Step</button>
+      <button id="reset">Reset</button>
+    </div>
+    <div class="row">
+      <button id="mode-current" class="active">Current</button>
+      <button id="mode-swept">Swept</button>
+    </div>
+    <div class="note">
+      Fixed straight road, fixed timestep, fixed lane.
+      The goal is to make the collision miss reproducible and then compare the patched behavior against the exact same setup.
+    </div>
+    <div id="debug" class="debug"></div>
+  </aside>
 
   <script src="js/constants.js"></script>
   <script src="js/util.js"></script>
@@ -23,20 +90,271 @@
   <script>
   window.addEventListener('DOMContentLoaded', function() {
     var canvas = document.getElementById('game');
+    var debugEl = document.getElementById('debug');
+    var toggleBtn = document.getElementById('toggle');
+    var stepBtn = document.getElementById('step');
+    var resetBtn = document.getElementById('reset');
+    var currentBtn = document.getElementById('mode-current');
+    var sweptBtn = document.getElementById('mode-swept');
+
     canvas.width = PVR.WIDTH;
     canvas.height = PVR.HEIGHT;
-
     PVR.Render.init(canvas.getContext('2d'));
 
-    PVR.Loader.load(function() {
-      PVR.Road.buildTrack();
+    var Sandbox = {
+      mode: 'current',
+      running: true,
+      fixedDt: 0.2,
+      frame: 0,
+      player: null,
+      lastHit: false,
+      lastDz: 0,
+      lastScreenOverlap: false,
+      lastNpcRect: null,
+      lastPlayerRect: null
+    };
 
-      PVR.Render.staticScene(
-        PVR.Road.segments,
-        0,
-        PVR.ROAD.CAMERA_HEIGHT,
-        -2 * PVR.ROAD.SEGMENT_LENGTH
-      );
+    function buildStraightTrack() {
+      PVR.Road.resetSegments();
+      PVR.Road.addStraight(400);
+      PVR.Road.trackLength = PVR.Road.segments.length * PVR.ROAD.SEGMENT_LENGTH;
+    }
+
+    function resetScenario() {
+      buildStraightTrack();
+      PVR.NPC.reset();
+      PVR.NPC.spawnRival(PVR.ROAD.PLAYER_Z + 520);
+
+      Sandbox.player = {
+        position: 0,
+        speed: PVR.SPEED.MAX,
+        playerX: PVR.LANE.CYCLE_CENTER
+      };
+      Sandbox.frame = 0;
+      Sandbox.lastHit = false;
+      Sandbox.lastDz = PVR.NPC.list[0].z - (Sandbox.player.position + PVR.ROAD.PLAYER_Z);
+      Sandbox.lastScreenOverlap = false;
+      Sandbox.lastNpcRect = null;
+      Sandbox.lastPlayerRect = null;
+      render();
+    }
+
+    function getPlayerRect() {
+      var img = PVR.Assets.player_straight;
+      if (!img) return null;
+      var spriteScale = 0.75;
+      var destW = img.width * spriteScale;
+      var destH = img.height * spriteScale;
+      return {
+        x: PVR.WIDTH / 2 - destW / 2,
+        y: PVR.HEIGHT - destH - 5,
+        w: destW,
+        h: destH
+      };
+    }
+
+    function getNpcRect(baseSegment, playerY, npc) {
+      var seg = PVR.Road.findSegment(npc.z);
+      var segPercent = PVR.Util.percentRemaining(npc.z, PVR.ROAD.SEGMENT_LENGTH);
+      var looped = seg.index < baseSegment.index;
+      var camX = Sandbox.player.playerX * PVR.ROAD.WIDTH / 2;
+      var camY = PVR.ROAD.CAMERA_HEIGHT + playerY;
+      var camZ = Sandbox.player.position - (looped ? PVR.Road.trackLength : 0);
+
+      PVR.Util.project(seg.p1, camX, camY, camZ, PVR.ROAD.CAMERA_DEPTH, PVR.WIDTH, PVR.HEIGHT, PVR.ROAD.WIDTH);
+      PVR.Util.project(seg.p2, camX, camY, camZ, PVR.ROAD.CAMERA_DEPTH, PVR.WIDTH, PVR.HEIGHT, PVR.ROAD.WIDTH);
+
+      var img = PVR.Assets[npc.sprite];
+      if (!img || seg.p1.camera.z <= PVR.ROAD.CAMERA_DEPTH || seg.p2.camera.z <= PVR.ROAD.CAMERA_DEPTH) {
+        return null;
+      }
+
+      var scale = PVR.Util.interpolate(seg.p1.screen.scale, seg.p2.screen.scale, segPercent);
+      var roadX = PVR.Util.interpolate(seg.p1.screen.x, seg.p2.screen.x, segPercent);
+      var roadY = PVR.Util.interpolate(seg.p1.screen.y, seg.p2.screen.y, segPercent);
+      var roadW = PVR.Util.interpolate(seg.p1.screen.w, seg.p2.screen.w, segPercent);
+      var spriteScale = scale * PVR.ROAD.WIDTH * 1.4;
+      var destW = img.width * spriteScale;
+      var destH = img.height * spriteScale;
+
+      return {
+        x: roadX + (roadW * npc.offset) - destW / 2,
+        y: roadY - destH,
+        w: destW,
+        h: destH
+      };
+    }
+
+    function rectOverlap(a, b) {
+      if (!a || !b) return false;
+      return !(a.x + a.w < b.x || b.x + b.w < a.x || a.y + a.h < b.y || b.y + b.h < a.y);
+    }
+
+    function stepSimulation() {
+      var dt = Sandbox.fixedDt;
+      var player = Sandbox.player;
+      var trackLength = PVR.Road.trackLength;
+      var startPlayerZ = player.position + PVR.ROAD.PLAYER_Z;
+
+      if (Sandbox.mode === 'current') {
+        player.position = PVR.Util.increase(player.position, dt * player.speed, trackLength);
+        PVR.NPC.update(dt, trackLength);
+
+        var hitNpc = PVR.NPC.checkCollision(player.position + PVR.ROAD.PLAYER_Z, player.playerX, trackLength);
+        if (hitNpc && player.speed > hitNpc.speed) {
+          player.speed = hitNpc.speed;
+        }
+        Sandbox.lastHit = !!hitNpc;
+      } else {
+        PVR.NPC.update(dt, trackLength);
+        player.position = PVR.Util.increase(player.position, dt * player.speed, trackLength);
+
+        var playerSegment = PVR.Road.findSegment(player.position + PVR.ROAD.PLAYER_Z);
+        var playerPercent = PVR.Util.percentRemaining(player.position + PVR.ROAD.PLAYER_Z, PVR.ROAD.SEGMENT_LENGTH);
+        var playerY = PVR.Util.interpolate(playerSegment.p1.world.y, playerSegment.p2.world.y, playerPercent);
+        var playerMetrics = PVR.Render.playerMetrics();
+        var resolvedNpc = null;
+
+        for (var i = 0; i < PVR.NPC.list.length; i++) {
+          var npc = PVR.NPC.list[i];
+          var gap = PVR.NPC.signedDistance(player.position + PVR.ROAD.PLAYER_Z, npc.z, trackLength);
+          if (Math.abs(gap) > PVR.NPC_CONFIG.Z_PROXIMITY) continue;
+          var npcMetrics = PVR.Render.npcMetrics(npc, player.playerX, player.position, playerY);
+          if (!npcMetrics || !playerMetrics) continue;
+          if (!PVR.Render.rectOverlap(playerMetrics.hitbox, npcMetrics.hitbox)) continue;
+          resolvedNpc = npc;
+          break;
+        }
+
+        if (resolvedNpc && player.speed > resolvedNpc.speed) {
+          player.speed = resolvedNpc.speed;
+          player.position = PVR.Util.increase(resolvedNpc.z, -PVR.ROAD.PLAYER_Z, trackLength);
+        }
+        Sandbox.lastHit = !!resolvedNpc;
+      }
+
+      var npc = PVR.NPC.list[0];
+      Sandbox.lastDz = PVR.NPC.signedDistance(player.position + PVR.ROAD.PLAYER_Z, npc.z, trackLength);
+      Sandbox.frame += 1;
+      render();
+    }
+
+    function render() {
+      var ctx = PVR.Render.ctx;
+      var player = Sandbox.player;
+      var npc = PVR.NPC.list[0];
+
+      PVR.Render.clear();
+      PVR.Render.background(0, 0, 0);
+
+      var baseSegment = PVR.Road.findSegment(player.position);
+      var basePercent = PVR.Util.percentRemaining(player.position, PVR.ROAD.SEGMENT_LENGTH);
+      var playerSegment = PVR.Road.findSegment(player.position + PVR.ROAD.PLAYER_Z);
+      var playerPercent = PVR.Util.percentRemaining(player.position + PVR.ROAD.PLAYER_Z, PVR.ROAD.SEGMENT_LENGTH);
+      var playerY = PVR.Util.interpolate(playerSegment.p1.world.y, playerSegment.p2.world.y, playerPercent);
+
+      var maxy = PVR.HEIGHT;
+      var x = 0;
+      var dx = -(baseSegment.curve * basePercent);
+      var segments = PVR.Road.segments;
+      var segCount = segments.length;
+      var visibleSegments = [];
+
+      for (var n = 0; n < PVR.ROAD.DRAW_DISTANCE; n++) {
+        var segIndex = (baseSegment.index + n) % segCount;
+        var segment = segments[segIndex];
+        var looped = segIndex < baseSegment.index;
+        var camX = player.playerX * PVR.ROAD.WIDTH / 2;
+        var camY = PVR.ROAD.CAMERA_HEIGHT + playerY;
+        var camZ = player.position - (looped ? PVR.Road.trackLength : 0);
+
+        PVR.Util.project(segment.p1, camX - x, camY, camZ, PVR.ROAD.CAMERA_DEPTH, PVR.WIDTH, PVR.HEIGHT, PVR.ROAD.WIDTH);
+        PVR.Util.project(segment.p2, camX - x - dx, camY, camZ, PVR.ROAD.CAMERA_DEPTH, PVR.WIDTH, PVR.HEIGHT, PVR.ROAD.WIDTH);
+
+        x += dx;
+        dx += segment.curve;
+
+        if ((segment.p1.camera.z <= PVR.ROAD.CAMERA_DEPTH) ||
+            (segment.p2.screen.y >= segment.p1.screen.y) ||
+            (segment.p2.screen.y >= maxy)) {
+          continue;
+        }
+
+        PVR.Render.segment(
+          segment.p1.screen.x, segment.p1.screen.y, segment.p1.screen.w,
+          segment.p2.screen.x, segment.p2.screen.y, segment.p2.screen.w,
+          1, segment.color
+        );
+
+        visibleSegments.push(segment);
+        maxy = segment.p2.screen.y;
+      }
+
+      PVR.Render.drawRoadsideSprites(visibleSegments.slice().reverse());
+      PVR.Render.player(player.speed, PVR.SPEED.MAX, 0, 0, 0, '');
+
+      Sandbox.lastPlayerRect = getPlayerRect();
+      Sandbox.lastNpcRect = getNpcRect(baseSegment, playerY, npc);
+      Sandbox.lastScreenOverlap = rectOverlap(Sandbox.lastPlayerRect, Sandbox.lastNpcRect);
+
+      if (Sandbox.lastNpcRect) {
+        ctx.strokeStyle = Sandbox.lastHit ? '#FF4D4D' : '#FFD54F';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(Sandbox.lastNpcRect.x, Sandbox.lastNpcRect.y, Sandbox.lastNpcRect.w, Sandbox.lastNpcRect.h);
+      }
+
+      if (Sandbox.lastPlayerRect) {
+        ctx.strokeStyle = Sandbox.lastScreenOverlap ? '#00E676' : '#42A5F5';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(Sandbox.lastPlayerRect.x, Sandbox.lastPlayerRect.y, Sandbox.lastPlayerRect.w, Sandbox.lastPlayerRect.h);
+      }
+
+      debugEl.textContent = [
+        'mode: ' + Sandbox.mode,
+        'frame: ' + Sandbox.frame,
+        'fixed dt: ' + Sandbox.fixedDt.toFixed(2) + 's',
+        'player speed: ' + Sandbox.player.speed.toFixed(0),
+        'player z: ' + (Sandbox.player.position + PVR.ROAD.PLAYER_Z).toFixed(1),
+        'npc z: ' + npc.z.toFixed(1),
+        'signed gap: ' + Sandbox.lastDz.toFixed(1),
+        'x overlap: ' + PVR.Util.overlap(Sandbox.player.playerX, PVR.NPC_CONFIG.PLAYER_WIDTH, npc.offset, npc.w, PVR.NPC_CONFIG.OVERLAP_PERCENT),
+        'collision hit: ' + Sandbox.lastHit,
+        'screen overlap: ' + Sandbox.lastScreenOverlap
+      ].join('\n');
+    }
+
+    function loop() {
+      if (Sandbox.running) {
+        stepSimulation();
+      }
+      requestAnimationFrame(loop);
+    }
+
+    function setMode(mode) {
+      Sandbox.mode = mode;
+      currentBtn.classList.toggle('active', mode === 'current');
+      sweptBtn.classList.toggle('active', mode === 'swept');
+      resetScenario();
+    }
+
+    toggleBtn.addEventListener('click', function() {
+      Sandbox.running = !Sandbox.running;
+      toggleBtn.textContent = Sandbox.running ? 'Pause' : 'Run';
+    });
+
+    stepBtn.addEventListener('click', function() {
+      Sandbox.running = false;
+      toggleBtn.textContent = 'Run';
+      stepSimulation();
+    });
+
+    resetBtn.addEventListener('click', resetScenario);
+    currentBtn.addEventListener('click', function() { setMode('current'); });
+    sweptBtn.addEventListener('click', function() { setMode('swept'); });
+
+    PVR.Loader.load(function() {
+      resetScenario();
+      loop();
     });
   });
   </script>

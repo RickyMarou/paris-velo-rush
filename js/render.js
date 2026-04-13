@@ -3,9 +3,102 @@ window.PVR = window.PVR || {};
 PVR.Render = {
 
   ctx: null,
+  debug: {
+    playerRect: null,
+    playerHitbox: null,
+    npcRects: [],
+    npcHitboxes: []
+  },
 
   init: function(ctx) {
     PVR.Render.ctx = ctx;
+  },
+
+  beginFrame: function() {
+    PVR.Render.debug.playerRect = null;
+    PVR.Render.debug.playerHitbox = null;
+    PVR.Render.debug.npcRects = [];
+    PVR.Render.debug.npcHitboxes = [];
+  },
+
+  playerMetrics: function() {
+    var img = PVR.Assets.player_straight;
+    if (!img) return null;
+
+    var spriteScale = 0.75;
+    var destW = img.width * spriteScale;
+    var destH = img.height * spriteScale;
+    var destX = PVR.WIDTH / 2 - destW / 2;
+    var destY = PVR.HEIGHT - destH - 5;
+    var hitboxW = destW * (PVR.NPC_CONFIG.PLAYER_WIDTH / 0.56) * PVR.NPC_CONFIG.OVERLAP_PERCENT;
+    var hitboxH = destH * 0.24;
+
+    return {
+      sprite: {
+        x: destX,
+        y: destY,
+        w: destW,
+        h: destH
+      },
+      hitbox: {
+        x: destX + (destW - hitboxW) / 2,
+        y: destY + destH - hitboxH,
+        w: hitboxW,
+        h: hitboxH
+      }
+    };
+  },
+
+  npcMetrics: function(npc, playerX, position, playerY) {
+    var img = PVR.Assets[npc.sprite];
+    if (!img) return null;
+
+    var seg = PVR.Road.findSegment(npc.z);
+    var segPercent = PVR.Util.percentRemaining(npc.z, PVR.ROAD.SEGMENT_LENGTH);
+    var playerSegment = PVR.Road.findSegment(position + PVR.ROAD.PLAYER_Z);
+    var looped = seg.index < playerSegment.index;
+    var camX = playerX * PVR.ROAD.WIDTH / 2;
+    var camY = PVR.ROAD.CAMERA_HEIGHT + playerY;
+    var camZ = position - (looped ? PVR.Road.trackLength : 0);
+
+    PVR.Util.project(seg.p1, camX, camY, camZ, PVR.ROAD.CAMERA_DEPTH, PVR.WIDTH, PVR.HEIGHT, PVR.ROAD.WIDTH);
+    PVR.Util.project(seg.p2, camX, camY, camZ, PVR.ROAD.CAMERA_DEPTH, PVR.WIDTH, PVR.HEIGHT, PVR.ROAD.WIDTH);
+
+    if (seg.p1.camera.z <= PVR.ROAD.CAMERA_DEPTH || seg.p2.camera.z <= PVR.ROAD.CAMERA_DEPTH) {
+      return null;
+    }
+
+    var scale = PVR.Util.interpolate(seg.p1.screen.scale, seg.p2.screen.scale, segPercent);
+    var roadX = PVR.Util.interpolate(seg.p1.screen.x, seg.p2.screen.x, segPercent);
+    var roadY = PVR.Util.interpolate(seg.p1.screen.y, seg.p2.screen.y, segPercent);
+    var roadW = PVR.Util.interpolate(seg.p1.screen.w, seg.p2.screen.w, segPercent);
+    var spriteScale = scale * PVR.ROAD.WIDTH * 1.4;
+    var destW = img.width * spriteScale;
+    var destH = img.height * spriteScale;
+    var destX = roadX + (roadW * npc.offset) - destW / 2;
+    var destY = roadY - destH;
+    var hitboxW = roadW * npc.w * PVR.NPC_CONFIG.OVERLAP_PERCENT;
+    var hitboxH = destH * 0.28;
+
+    return {
+      sprite: {
+        x: destX,
+        y: destY,
+        w: destW,
+        h: destH
+      },
+      hitbox: {
+        x: roadX + (roadW * (npc.offset + PVR.NPC_CONFIG.HITBOX_X)) - hitboxW / 2,
+        y: destY + destH - hitboxH,
+        w: hitboxW,
+        h: hitboxH
+      }
+    };
+  },
+
+  rectOverlap: function(a, b) {
+    if (!a || !b) return false;
+    return !((a.x + a.w < b.x) || (b.x + b.w < a.x) || (a.y + a.h < b.y) || (b.y + b.h < a.y));
   },
 
   clear: function() {
@@ -170,15 +263,13 @@ PVR.Render = {
   },
 
   npcSprite: function(seg, npc) {
-    var img = PVR.Assets[npc.sprite];
-    if (!img) return;
-
     var npcPercent = (npc.z % PVR.ROAD.SEGMENT_LENGTH) / PVR.ROAD.SEGMENT_LENGTH;
     var scale = PVR.Util.interpolate(seg.p1.screen.scale, seg.p2.screen.scale, npcPercent);
     var roadX = PVR.Util.interpolate(seg.p1.screen.x, seg.p2.screen.x, npcPercent);
     var roadY = PVR.Util.interpolate(seg.p1.screen.y, seg.p2.screen.y, npcPercent);
     var roadW = PVR.Util.interpolate(seg.p1.screen.w, seg.p2.screen.w, npcPercent);
-
+    var img = PVR.Assets[npc.sprite];
+    if (!img) return;
     var spriteScale = scale * PVR.ROAD.WIDTH * 1.4;
     var destW = img.width * spriteScale;
     var destH = img.height * spriteScale;
@@ -186,6 +277,23 @@ PVR.Render = {
     var destY = roadY - destH;
 
     PVR.Render.ctx.drawImage(img, 0, 0, img.width, img.height, destX, destY, destW, destH);
+
+    if (PVR.DEBUG.COLLISIONS) {
+      PVR.Render.debug.npcRects.push({
+        npc: npc,
+        x: destX,
+        y: destY,
+        w: destW,
+        h: destH
+      });
+      PVR.Render.debug.npcHitboxes.push({
+        npc: npc,
+        x: roadX + (roadW * (npc.offset + PVR.NPC_CONFIG.HITBOX_X)) - (roadW * npc.w * PVR.NPC_CONFIG.OVERLAP_PERCENT) / 2,
+        y: destY + destH - (destH * 0.28),
+        w: roadW * npc.w * PVR.NPC_CONFIG.OVERLAP_PERCENT,
+        h: destH * 0.28
+      });
+    }
   },
 
   sprite: function(roadX, roadY, roadW, spriteKey, offset) {
@@ -226,9 +334,67 @@ PVR.Render = {
     PVR.Render.ctx.drawImage(img, 0, 0, img.width, img.height,
       destX + shakeX, destY + shakeY, destW, destH);
 
+    if (PVR.DEBUG.COLLISIONS) {
+      var metrics = PVR.Render.playerMetrics();
+      if (metrics) {
+        PVR.Render.debug.playerRect = metrics.sprite;
+        PVR.Render.debug.playerHitbox = metrics.hitbox;
+      }
+    }
+
     if (speedPercent > 0.8) {
       PVR.Render.speedLines(speedPercent);
     }
+  },
+
+  collisionDebug: function(state) {
+    if (!PVR.DEBUG.COLLISIONS || !state) return;
+
+    var ctx = PVR.Render.ctx;
+    var playerRect = PVR.Render.debug.playerRect;
+    var hitNpc = state.hitNpc || null;
+
+    if (playerRect) {
+      ctx.strokeStyle = 'rgba(66, 165, 245, 0.5)';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(playerRect.x, playerRect.y, playerRect.w, playerRect.h);
+    }
+
+    for (var i = 0; i < PVR.Render.debug.npcRects.length; i++) {
+      var rect = PVR.Render.debug.npcRects[i];
+      ctx.strokeStyle = 'rgba(255, 213, 79, 0.5)';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+    }
+
+    if (PVR.Render.debug.playerHitbox) {
+      ctx.strokeStyle = hitNpc ? '#FF4D4D' : '#00E5FF';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(
+        PVR.Render.debug.playerHitbox.x,
+        PVR.Render.debug.playerHitbox.y,
+        PVR.Render.debug.playerHitbox.w,
+        PVR.Render.debug.playerHitbox.h
+      );
+    }
+
+    for (i = 0; i < PVR.Render.debug.npcHitboxes.length; i++) {
+      rect = PVR.Render.debug.npcHitboxes[i];
+      ctx.strokeStyle = rect.npc === hitNpc ? '#FF4D4D' : '#7CFF6B';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+    }
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+    ctx.fillRect(16, 120, 320, 136);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '20px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('Debug collision: ' + (!!hitNpc), 28, 150);
+    ctx.fillText('playerX: ' + state.playerX.toFixed(3), 28, 176);
+    ctx.fillText('playerZ: ' + state.playerZ.toFixed(1), 28, 202);
+    ctx.fillText('npcGap: ' + state.closestGap.toFixed(1), 28, 228);
+    ctx.fillText('screenOverlap: ' + (!!state.screenOverlap), 28, 254);
   },
 
   speedLines: function(speedPercent) {

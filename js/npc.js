@@ -4,6 +4,13 @@ PVR.NPC = {
 
   list: [],
 
+  signedDistance: function(fromZ, toZ, trackLength) {
+    var dz = toZ - fromZ;
+    if (dz < -trackLength / 2) dz += trackLength;
+    if (dz > trackLength / 2) dz -= trackLength;
+    return dz;
+  },
+
   reset: function() {
     PVR.NPC.list = [];
   },
@@ -39,18 +46,36 @@ PVR.NPC = {
     var cfg = PVR.NPC_CONFIG;
     for (var i = 0; i < PVR.NPC.list.length; i++) {
       var npc = PVR.NPC.list[i];
-
-      var dz = npc.z - playerZ;
-      if (dz < 0) dz += trackLength;
-      if (dz > trackLength / 2) dz = trackLength - dz;
+      var dz = Math.abs(PVR.NPC.signedDistance(playerZ, npc.z, trackLength));
 
       if (dz < cfg.Z_PROXIMITY) {
-        if (PVR.Util.overlap(playerX, cfg.PLAYER_WIDTH, npc.offset, npc.w, cfg.OVERLAP_PERCENT)) {
+        if (PVR.Util.overlap(playerX, cfg.PLAYER_WIDTH, npc.offset + cfg.HITBOX_X, npc.w, cfg.OVERLAP_PERCENT)) {
           return npc;
         }
       }
     }
     return null;
+  },
+
+  findBlockingNpc: function(playerZ, playerX, trackLength) {
+    var cfg = PVR.NPC_CONFIG;
+    var closestNpc = null;
+    var closestGap = Infinity;
+
+    for (var i = 0; i < PVR.NPC.list.length; i++) {
+      var npc = PVR.NPC.list[i];
+      if (!PVR.Util.overlap(playerX, cfg.PLAYER_WIDTH, npc.offset + cfg.HITBOX_X, npc.w, cfg.OVERLAP_PERCENT)) {
+        continue;
+      }
+
+      var gap = PVR.NPC.signedDistance(playerZ, npc.z, trackLength);
+      if (gap >= 0 && gap <= cfg.Z_PROXIMITY && gap < closestGap) {
+        closestGap = gap;
+        closestNpc = npc;
+      }
+    }
+
+    return closestNpc;
   }
 
 };
